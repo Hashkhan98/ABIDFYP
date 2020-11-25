@@ -105,7 +105,7 @@ param.U=U;
 
 %%
 
-tspan = [0 0.1]; 
+tspan = [0 1]; 
 XX = [];
 UU = [];
 % for i = 1:11
@@ -132,7 +132,7 @@ function dx = LQR(t,q,K,u0)
 % 
 % B = [zeros(4,1); 1/m1 ; 1/m2 ; 1 ; 1];
 global param
-param.U = -K*q;
+u = -K*q;
 % u = -K*x*0;
 
 % dx = A*x + B*u;
