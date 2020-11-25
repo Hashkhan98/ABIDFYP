@@ -1,4 +1,4 @@
-Q = diag([1e2 1e2 1e2 1e2 1 1 1 1]);
+Q = diag([1e4 1e4 1e4 1e4 1 1 1 1]);
 R = diag([1]);
 
 q0 = [    0.8000;
@@ -23,6 +23,7 @@ Ib = 1/12 * mbh * lb^2 + mbh * (lb/2)^2 + 1/2 * mbv * bvr^2;
 
 Fz = g*(m1+m2+mbh) +u0(4);
 
+qgoal = [0.3,0.3*m1/m2,90*pi/180,0.4 ,0,0,0,0]';
 % q = [r1 r2 theta z]
 r1 = q0(1);
 r2 = q0(2);
@@ -62,24 +63,21 @@ G = [0;0;0;g*(m1+m2+mbh)];
 
 global param
 param.M = M;
-param.C= C;
+param.C = C;
 param.G = G;
-param.U=U;
+param.U = U;
      
 A= [zeros(4) , eye(4) ; zeros(4,8)];
 
 
 % B = [zeros(4,1); 1/m1 ; 1/m2 ; 1 ; 1];
 B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
-    
-% A_ctrl = [A(2,2),A(2,4);A(4,2),A(4,4)];
-% 
-% B_ctrl = [B(2);B(4)];
-% 
-% Q_ctrl = diag([1e3 1e5]);
-% R_ctrl = 1;
+
+C = [1,1,1,1,0,0,0,0];
 
 [K,P,E]=lqr(A,B,Q,R);  %k=full state feedback gain.....P= solution to algebric ricaati equation....E= Eigrn values
+
+N_ff = 1\(C/((- A + B * K))* B);
 
 %Eigen values
 % E = eig(A-B*K)
@@ -109,7 +107,7 @@ tspan = [0 0.1];
 XX = [];
 UU = [];
 
-simsteps = 30; 
+simsteps = 10; 
 simstep = 0.1;
 
 qall = zeros(8,simsteps/simstep);
@@ -119,11 +117,11 @@ time = 1:simsteps/simstep;
 % [tx,xx] = ode45(@(t,q) LQR(t,q,K),tspan,q0); 
     
 tic
-for i = 2:(simsteps/simstep)
-    
-    % qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
-    [tx,xx] = ode45(@(t,q) LQR(t,q,K),tspan,qall(:,i-1));
+for i = 2:(simsteps/simstep)  
+%     qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
+    [tx,xx] = ode45(@(t,q) LQR(t,q,K,qgoal),tspan,qall(:,i-1));
     qall(:,i) = xx(end,:)';
+
 end
 toc
 
@@ -140,23 +138,32 @@ plot(time, qall(1:4,:))
 hold on
 plot(time,repmat(qgoal(1:4,:),1,simsteps/simstep),'r--')
 hold off
-legend('r1','r2','theta','z','dr1','dr2','dtheta','dz')
+legend('r1','r2','theta','z','des r1','des r2','des theta','des z')
 
 figure(2)
-plot(time,K*qall)
+plot(time, qall(5:8,:))
+
+hold on
+plot(time,repmat(qgoal(5:8,:),1,simsteps/simstep),'r--')
+hold off
+legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
+
+
+figure(3)
+plot(time,-K*(qall-repmat(qgoal,1,simsteps/simstep)))
 % figure(2)
 % plot(t,XX(1,:),t,XX(2,:),t,XX(3,:),t,XX(4,:))
   
-function dx = LQR(t,q,K)
+function dx = LQR(t,q,K,qgoal)
 
 % A= [zeros(4) , eye(4) ; zeros(4,8)];
 % 
 % 
 % B = [zeros(4,1); 1/m1 ; 1/m2 ; 1 ; 1];
 global param
-param.U = -K*q;
-% u = -K*x*0;
-
+% param.U = -K*q;
+%%ref tracking
+param.U = -K*(q-qgoal);
 % dx = A*x + B*u;
 
 m1 = 1;
