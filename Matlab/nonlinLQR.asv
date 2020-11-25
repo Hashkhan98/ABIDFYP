@@ -1,4 +1,4 @@
-Q = diag([1e2 1e2 1e2 1e2 1 1 1 1]);
+Q = diag([1e-2 1e-2 1e-2 1e-2 1 1 1 1]);
 R = diag([1]);
 
 q0 = [    0.8000;
@@ -109,20 +109,20 @@ tspan = [0 0.1];
 XX = [];
 UU = [];
 
-simsteps = 30; 
+simsteps = 3; 
 simstep = 0.1;
 
 qall = zeros(8,simsteps/simstep);
 qall(:,1) = q0;
 
 time = 1:simsteps/simstep;
-% [tx,xx] = ode45(@(t,q) LQR(t,q,K),tspan,q0); 
+% [tx,xx] = ode45(@(t,q,u) LQR(t,q,K),tspan,q0); 
     
 tic
 for i = 2:(simsteps/simstep)
     
     % qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
-    [tx,xx] = ode45(@(t,q) LQR(t,q,K),tspan,qall(:,i-1));
+    [tx,xx] = ode45(@(t,q,u) LQR(t,q,K),tspan,qall(:,i-1));
     qall(:,i) = xx(end,:)';
 end
 toc
