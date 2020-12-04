@@ -52,7 +52,7 @@ param.C = C;
 param.G = G;
 param.U = U;
      
-A= [zeros(4) , eye(4) ; zeros(4,8)];
+A = [zeros(4) , eye(4) ; zeros(4,8)];
 
 B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
 
@@ -62,21 +62,32 @@ B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
 % C = [1,1,1,1,0,0,0,0];
 % N_ff = 1\(C/((- A + B * K))* B);
 
+
+%%
 tspan = [0 0.1]; 
 XX = [];
 UU = [];
 
-simsteps = 10; 
-simstep = 0.1;
+simtime = 10; % Length of simulation in seconds
+T = 0.1; % 
 
-qall = zeros(8,simsteps/simstep);
+qall = zeros(8,simtime/T);
 qall(:,1) = q0;
 
-time = 1:simsteps/simstep;
+time = 1:simtime/T;
 % [tx,xx] = ode45(@(t,q) LQR(t,q,K),tspan,q0); 
     
+%% Trajectory stuff
+
+% Generate waypoint intercept times and position/velocity/acceleration data
+[tWpts, XWpts] = generateWaypoints(simtime,q0,qgoal);
+
+% Compute polynomial spline coefficients
+param.traj = trajectoryDesign(tWpts, XWpts);
+
+%%
 tic
-for i = 2:(simsteps/simstep)  
+for i = 2:(simtime/T)  
 %     qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
     [tx,xx] = ode45(@(t,q) LQR(t,q,K,qgoal),tspan,qall(:,i-1));
     qall(:,i) = xx(end,:)';
@@ -90,7 +101,7 @@ figure(1)
 plot(time, qall(1:4,:))
 
 hold on
-plot(time,repmat(qgoal(1:4,:),1,simsteps/simstep),'r--')
+plot(time,repmat(qgoal(1:4,:),1,simtime/T),'r--')
 hold off
 legend('r1','r2','theta','z','des r1','des r2','des theta','des z')
 
@@ -98,26 +109,29 @@ figure(2)
 plot(time, qall(5:8,:))
 
 hold on
-plot(time,repmat(qgoal(5:8,:),1,simsteps/simstep),'r--')
+plot(time,repmat(qgoal(5:8,:),1,simtime/T),'r--')
 hold off
 legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
 
 
 figure(3)
-plot(time,-K*(qall-repmat(qgoal,1,simsteps/simstep)))
+plot(time,-K*(qall-repmat(qgoal,1,simtime/T)))
 % figure(2)
 % plot(t,XX(1,:),t,XX(2,:),t,XX(3,:),t,XX(4,:))
   
 function dx = LQR(t,q,K,qgoal)
 
 % A= [zeros(4) , eye(4) ; zeros(4,8)];
-% jhgg
+% 
 % 
 % B = [zeros(4,1); 1/m1 ; 1/m2 ; 1 ; 1];
 global param
+Parameters;
 % param.U = -K*q;
 %%ref tracking
-param.U = -K*(q-qgoal);
+param.U = -K*(q - qgoal);
+
+param.U = param.U + [0;0;0;g*(m1+m2+mbh)];
 % dx = A*x + B*u;
 
 % m1 = 1;

@@ -161,10 +161,12 @@ function dx = LQR(t,q,K,qgoal)
 % 
 % B = [zeros(4,1); 1/m1 ; 1/m2 ; 1 ; 1];
 global param
+Parameters;
 % param.U = -K*q;
 %%ref tracking
 param.U = -K*(q-qgoal);
 % dx = A*x + B*u;
+param.U = param.U + [0;0;0;g*(m1+m2+mbh)];
 
 m1 = 1;
 m2 = 3.6;
