@@ -37,7 +37,7 @@ K = ones(1,8)*0;
 
 simtime = 5; 
 simstep = 0.01;
-H = 6; 
+H = 3; 
 
 tspan = [0 simstep];
 
