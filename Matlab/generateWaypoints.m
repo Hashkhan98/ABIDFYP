@@ -1,4 +1,4 @@
-function [t, X] = generateWaypoints(simtime,q0,qgoal)
+function [t, X] = generateWaypoints(simtime,T,q0,qgoal)
 
 % Waypoint intercept times
 t0 = 0;                 % Waypoint 0 intercept time [s]

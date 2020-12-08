@@ -5,8 +5,8 @@ clear;close all;
 Parameters;
 
 %%Weights for Q and R for each state
-Q = diag([1e4 1e4 1e4 1e4 1 1 1 1]);
-R = diag(1);
+Q = diag([1e3 1e5 50 5e3 10 10 10 1000]);
+R = diag([1]);
 
 q0 = [0.8000; 0.2222; 0; 0.9000; 0; 0; 0; 0];
 u0 = [0 0 0 0]';
@@ -64,12 +64,13 @@ B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
 
 
 %%
-tspan = [0 0.1]; 
+ 
 XX = [];
 UU = [];
 
 simtime = 10; % Length of simulation in seconds
-T = 0.1; % 
+T = 0.01; % 
+simstep = [0 T];
 
 qall = zeros(8,simtime/T);
 qall(:,1) = q0;
@@ -80,7 +81,7 @@ time = 1:simtime/T;
 %% Trajectory stuff
 
 % Generate waypoint intercept times and position/velocity/acceleration data
-[tWpts, XWpts] = generateWaypoints(simtime,q0,qgoal);
+[tWpts, XWpts] = generateWaypoints(simtime,T,q0,qgoal);
 
 % Compute polynomial spline coefficients
 param.traj = trajectoryDesign(tWpts, XWpts);
@@ -89,7 +90,7 @@ param.traj = trajectoryDesign(tWpts, XWpts);
 tic
 for i = 2:(simtime/T)  
 %     qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
-    [tx,xx] = ode45(@(t,q) LQR(t,q,K,qgoal),tspan,qall(:,i-1));
+    [tx,xx] = ode45(@(t,q) LQR(t,q,K,qgoal),simstep,qall(:,i-1));
     qall(:,i) = xx(end,:)';
 
 end
@@ -104,6 +105,8 @@ hold on
 plot(time,repmat(qgoal(1:4,:),1,simtime/T),'r--')
 hold off
 legend('r1','r2','theta','z','des r1','des r2','des theta','des z')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',11)
 
 figure(2)
 plot(time, qall(5:8,:))
@@ -112,10 +115,13 @@ hold on
 plot(time,repmat(qgoal(5:8,:),1,simtime/T),'r--')
 hold off
 legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
-
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',11)
 
 figure(3)
 plot(time,-K*(qall-repmat(qgoal,1,simtime/T)))
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',11)
 % figure(2)
 % plot(t,XX(1,:),t,XX(2,:),t,XX(3,:),t,XX(4,:))
   
@@ -146,6 +152,10 @@ param.U = param.U + [0;0;0;g*(m1+m2+mbh)];
 ddq = inv(param.M) * (-param.C*q(5:8) - param.G + param.U);
 
 dx = [q(5:8);ddq];
+
+%% trajectory stuff
+trajectoryOutputHelper(t);
+%%
 
 end
 
