@@ -1,4 +1,5 @@
-Q = diag([1e4 1e4 1e4 1e4 1 1 1 1]);
+%%Weights for Q and R for each state
+Q = diag([1e3 1e5 50 5e3 10 10 10 1000]);
 R = diag([1]);
 
 q0 = [    0.8000;

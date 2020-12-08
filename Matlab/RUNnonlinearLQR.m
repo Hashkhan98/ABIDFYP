@@ -13,7 +13,7 @@ u0 = [0 0 0 0]';
 
 Fz = g*(m1+m2+mbh) +u0(4);
 
-qgoal = [0.3,0.3*m1/m2,90*pi/180,0.4 ,0,0,0,0]';
+qgoal = [0.7,0.8*m1/m2,20*pi/180,0.8 ,0,0,0,0]';
 % q = [r1 r2 theta z]
 r1 = q0(1);
 r2 = q0(2);
@@ -68,14 +68,14 @@ B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
 XX = [];
 UU = [];
 
-simtime = 10; % Length of simulation in seconds
+simtime = 5; % Length of simulation in seconds
 T = 0.01; % 
 simstep = [0 T];
 
 qall = zeros(8,simtime/T);
 qall(:,1) = q0;
 
-time = 1:simtime/T;
+time = 0:T:simtime;
 % [tx,xx] = ode45(@(t,q) LQR(t,q,K),tspan,q0); 
     
 %% Trajectory stuff
@@ -88,10 +88,10 @@ param.traj = trajectoryDesign(tWpts, XWpts);
 
 %%
 tic
-for i = 2:(simtime/T)  
+for i = 1:(simtime/T)  
 %     qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
-    [tx,xx] = ode45(@(t,q) LQR(t,q,K,qgoal),simstep,qall(:,i-1));
-    qall(:,i) = xx(end,:)';
+    [tx,xx] = ode45(@(t,q) LQR(t,q,K,qgoal),simstep,qall(:,i));
+    qall(:,i+1) = xx(end,:)';
 
 end
 toc
@@ -102,7 +102,7 @@ figure(1)
 plot(time, qall(1:4,:))
 
 hold on
-plot(time,repmat(qgoal(1:4,:),1,simtime/T),'r--')
+plot(time,repmat(qgoal(1:4,:),1,length(time)),'r--')
 hold off
 legend('r1','r2','theta','z','des r1','des r2','des theta','des z')
 set(gcf,'color','w')
@@ -112,14 +112,14 @@ figure(2)
 plot(time, qall(5:8,:))
 
 hold on
-plot(time,repmat(qgoal(5:8,:),1,simtime/T),'r--')
+plot(time,repmat(qgoal(5:8,:),1,length(time)),'r--')
 hold off
 legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 
 figure(3)
-plot(time,-K*(qall-repmat(qgoal,1,simtime/T)))
+plot(time,-K*(qall-repmat(qgoal,1,length(time))))
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 % figure(2)
@@ -138,16 +138,6 @@ Parameters;
 param.U = -K*(q - qgoal);
 
 param.U = param.U + [0;0;0;g*(m1+m2+mbh)];
-% dx = A*x + B*u;
-
-% m1 = 1;
-% m2 = 3.6;
-% mbh = 1.4;
-% mbv = 5;
-% bvr = .015;
-% g = 9.81;
-% lb = 1.4;
-% Ib = 1/12 * mbh * lb^2 + mbh * (lb/2)^2 + 1/2 * mbv * bvr^2;
 
 ddq = inv(param.M) * (-param.C*q(5:8) - param.G + param.U);
 
