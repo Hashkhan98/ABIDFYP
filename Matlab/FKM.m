@@ -70,37 +70,37 @@ rB_m2= T04(1:3,4);
 rB_beam_m1 = T0_fixedbeam_m1(1:3,4);
 rB_beam_m2 = T0_fixedbeam_m2(1:3,4);
 
-%% Plotting
-figure(3)
-clf;
-fig=plot3([0,0],[0,0], [0, 1], 'b-','LineWidth',6,'MarkerSize',4,'MarkerFaceColor',[0 0 0],'MarkerEdgeColor',[0 0 0]);
-hold on
-
-plot3([rB_mc1(1), rB_beam_m1(1)],[rB_mc1(2), rB_beam_m1(2)], [rB_mc1(3), rB_beam_m1(3)], ...
-    'b-','LineWidth',6,'MarkerSize',4,'MarkerFaceColor',[0 0 0],'MarkerEdgeColor',[0 0 0]);
-
-plot3([rB_mc1(1), rB_beam_m2(1)],[rB_mc1(2), rB_beam_m2(2)], [rB_mc1(3), rB_beam_m2(3)],...
-    'b-','LineWidth',6,'MarkerSize',4,'MarkerFaceColor',[0 0 0],'MarkerEdgeColor',[0 0 0]);
-
-plot3([rB_m1(1)],[rB_m1(2)], [rB_m1(3)], 'rs','LineWidth',6,'MarkerSize',4,'MarkerFaceColor','k','MarkerEdgeColor','k');
-plot3([rB_m2(1)],[rB_m2(2)], [rB_m2(3)], 'rs','LineWidth',6,'MarkerSize',4*3,'MarkerFaceColor','k','MarkerEdgeColor','k');
-plot3(0,0, rB_m2(3), 'ro','LineWidth',6,'MarkerSize',4*3,'MarkerFaceColor','k','MarkerEdgeColor','k');
-
-drawFrame(T01,fig)
-drawFrame(T03,fig)
-drawFrame(T04,fig)
-
-[x1 y1] = meshgrid(-1:0.1:1); % Generate x and y data
-z1 = zeros(size(x1, 1)); % Generate z data
-surf(x1, y1, z1) % Plot the surface
-
-axis([-1 1 -1 1 0 1]);
-title('Pose of the Robot')
-
-xlabel('x','Fontsize',20);
-ylabel('y','Fontsize',20);
-zlabel('z','Fontsize',20);
-set(gcf,'color','w');
-hold off
+% %% Plotting
+% figure(3)
+% clf;
+% fig=plot3([0,0],[0,0], [0, 1], 'b-','LineWidth',6,'MarkerSize',4,'MarkerFaceColor',[0 0 0],'MarkerEdgeColor',[0 0 0]);
+% hold on
+% 
+% plot3([rB_mc1(1), rB_beam_m1(1)],[rB_mc1(2), rB_beam_m1(2)], [rB_mc1(3), rB_beam_m1(3)], ...
+%     'b-','LineWidth',6,'MarkerSize',4,'MarkerFaceColor',[0 0 0],'MarkerEdgeColor',[0 0 0]);
+% 
+% plot3([rB_mc1(1), rB_beam_m2(1)],[rB_mc1(2), rB_beam_m2(2)], [rB_mc1(3), rB_beam_m2(3)],...
+%     'b-','LineWidth',6,'MarkerSize',4,'MarkerFaceColor',[0 0 0],'MarkerEdgeColor',[0 0 0]);
+% 
+% plot3([rB_m1(1)],[rB_m1(2)], [rB_m1(3)], 'rs','LineWidth',6,'MarkerSize',4,'MarkerFaceColor','k','MarkerEdgeColor','k');
+% plot3([rB_m2(1)],[rB_m2(2)], [rB_m2(3)], 'rs','LineWidth',6,'MarkerSize',4*3,'MarkerFaceColor','k','MarkerEdgeColor','k');
+% plot3(0,0, rB_m2(3), 'ro','LineWidth',6,'MarkerSize',4*3,'MarkerFaceColor','k','MarkerEdgeColor','k');
+% 
+% drawFrame(T01,fig)
+% drawFrame(T03,fig)
+% drawFrame(T04,fig)
+% 
+% [x1 y1] = meshgrid(-1:0.1:1); % Generate x and y data
+% z1 = zeros(size(x1, 1)); % Generate z data
+% surf(x1, y1, z1) % Plot the surface
+% 
+% axis([-1 1 -1 1 0 1]);
+% title('Pose of the Robot')
+% 
+% xlabel('x','Fontsize',20);
+% ylabel('y','Fontsize',20);
+% zlabel('z','Fontsize',20);
+% set(gcf,'color','w');
+% hold off
 end
 
