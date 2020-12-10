@@ -2,11 +2,11 @@ function c = cost(U,qgoal, q0,H,tspan)
 
 ctemp = 0; 
 
-Q = diag([100,100,100,100,1,1,1,1]);
+Q = diag([100,100,10,10,1,1,1,1]);
 
 R = diag([1 1 1 1]);
 
-q1 = repmat(q0,1,H+1);
+q1 = repmat(q0,1,H);
 
 for i = 1:H
     

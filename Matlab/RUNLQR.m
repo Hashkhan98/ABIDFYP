@@ -1,17 +1,16 @@
-%% Simulate and plot the Tower Crane using LQR and a Nonlinear Model
+%% Simulate and plot the Tower Crane using LQR and a Linear/Nonlinear Model
 clear;close all;
 
+linflag = 1;  %% 0 for Linear ; 1 for NonLinear
 %% Declare Constants
 Parameters;
 
 %%Weights for Q and R for each state
 Q = diag([1e3 1e5 50 5e3 10 10 10 1000]);
-R = diag([1]);
+R = diag(1);
 
 q0 = [0.8000; 0.2222; 0; 0.9000; 0; 0; 0; 0];
 u0 = [0 0 0 0]';
-
-Fz = g*(m1+m2+mbh) +u0(4);
 
 qgoal = [0.7,0.8*m1/m2,20*pi/180,0.8 ,0,0,0,0]';
 % q = [r1 r2 theta z]
@@ -28,7 +27,7 @@ dz = q0(8);
 F1 = u0(1);
 F2 = u0(2);
 Tau = u0(3);
-
+Fz = g*(m1+m2+mbh) +u0(4);
 
 U = [F1,F2,Tau,Fz]';
 
@@ -86,11 +85,11 @@ time = 0:T:simtime;
 % Compute polynomial spline coefficients
 param.traj = trajectoryDesign(tWpts, XWpts);
 
-%%
+%% SIM
 tic
 for i = 1:(simtime/T)  
 %     qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
-    [tx,xx] = ode45(@(t,q) LQR(t,q,K,qgoal),simstep,qall(:,i));
+    [tx,xx] = ode45(@(t,q) LQR(t,q,K,qgoal,linflag),simstep,qall(:,i));
     qall(:,i+1) = xx(end,:)';
 
 end
@@ -125,7 +124,7 @@ set(gca,'fontweight','bold','fontsize',11)
 % figure(2)
 % plot(t,XX(1,:),t,XX(2,:),t,XX(3,:),t,XX(4,:))
   
-function dx = LQR(t,q,K,qgoal)
+function dx = LQR(t,q,K,qgoal,linflag)
 
 % A= [zeros(4) , eye(4) ; zeros(4,8)];
 % 
@@ -139,12 +138,20 @@ param.U = -K*(q - qgoal);
 
 param.U = param.U + [0;0;0;g*(m1+m2+mbh)];
 
-ddq = inv(param.M) * (-param.C*q(5:8) - param.G + param.U);
-
-dx = [q(5:8);ddq];
-
+if linflag
+    %%feedback linearisation
+    fx = [q(5:8);0;0;0;0];
+    gx = [0;0;0;0;(param.U(1) + m1*q(1)*q(7)^2)/m1;...
+          (param.U(2) + m2*q(2)*q(7)^2)/m2;...
+          (param.U(3)  - (2*m1*q(1)*q(5)*q(7) + 2*m2*q(2)*q(6)*q(7)))/(m1*q(1)^2 + m2*q(2)^2 + Ib);...
+          (param.U(4))/(m1+m2+mbh) - g];
+    dx = fx + gx;
+else
+    ddq = inv(param.M) * (-param.C*q(5:8) - param.G + param.U);
+    dx = [q(5:8);ddq];
+end
 %% trajectory stuff
-trajectoryOutputHelper(t);
+% trajectoryOutputHelper(t);
 %%
 
 end
