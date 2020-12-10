@@ -14,7 +14,6 @@ u0 = [0 0 0 0]';
 
 % qstar = [0.7,0.8*m1/m2,20*pi/180,0.8 ,0,0,0,0]';
 % qstardot = [0.1,0.1,1*pi/180,0.1 ,0.1,0.1,0.1,0.1]';
-[qstar,qstardot,qstardotdot] = TrajectoryGeneration();
 % q = [r1 r2 theta z]
 r1 = q0(1);
 r2 = q0(2);
@@ -78,7 +77,7 @@ qall(:,1) = q0;
 
 time = 0:T:simtime;
 % [tx,xx] = ode45(@(t,q) LQR(t,q,K),tspan,q0); 
-    
+[qstar,qstardot,qstardotdot] = TrajectoryGeneration(time); 
 
 %% SIM
 tic
