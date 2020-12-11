@@ -18,7 +18,7 @@ r2 = (-0.08+.5+r1)/3.6;
 
 dr1 = (x*dx + y*dy)/sqrt(x^2+y^2);
 dr2 = (-0.08+.5+dr1)/3.6;
-dq = (x*dy - dx*y)/(x^2+y^2);
+dq = (x*x + y*dy)/sqrt(x^2+y^2);
 
 % FKM([r1,r2,q,z]);
 
