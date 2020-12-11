@@ -83,8 +83,8 @@ time = 0:T:simtime;
 tic
 for i = 1:(simtime/T)  
 %     qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
-%     [xx] = ode4(@(t,q) LQR(t,q,K,qstar,qstardot,qstardotdot,linflag),simstep,qall(:,i));
-    xx = Model(i,qall(:,i),K,qstar,qstardot,qstardotdot,linflag);
+    [xx] = ode4(@(t,q) LQR(t,q,K,qstar,qstardot,qstardotdot,linflag),time,qall(:,i));
+%     xx = Model(i,qall(:,i),K,qstar,qstardot,qstardotdot,linflag);
     qall(:,i+1) = xx(end,:)';
 
 end
@@ -119,13 +119,47 @@ set(gca,'fontweight','bold','fontsize',11)
 % figure(2)
 % plot(t,XX(1,:),t,XX(2,:),t,XX(3,:),t,XX(4,:))
   
-function dx = Model(t,q,K,qstar,qstardot,qstardotdot,linflag)
+% function dx = Model(t,q,K,qstar,qstardot,qstardotdot,linflag)
+% 
+% global param
+% Parameters;
+% t = t + 1;
+% param.U = -K*q;
+% %ref tracking
+% U1 = -K*(q - [qstar(:,t);qstardot(:,t)]);
+% 
+% U2 = param.B \ (-param.A*[qstar(:,t);qstardot(:,t)] + [qstardot(:,t);qstardotdot(:,t)]);
+% 
+% param.U = U1 + U2;
+% 
+% param.U = param.U + [0;0;0;g*(m1+m2+mbh)];  %gravity cancellation
+% 
+% if linflag
+%     %feedback linearisation
+%     fx = [q(5:8);0;0;0;0];
+%     gx = [0;0;0;0;(param.U(1) + m1*q(1)*q(7)^2)/m1;...
+%           (param.U(2) + m2*q(2)*q(7)^2)/m2;...
+%           (param.U(3)  - (2*m1*q(1)*q(5)*q(7) + 2*m2*q(2)*q(6)*q(7)))/(m1*q(1)^2 + m2*q(2)^2 + Ib);...
+%           (param.U(4))/(m1+m2+mbh) - g];
+%     dx = fx + gx;
+% else
+%     ddq = inv(param.M) * (-param.C*q(5:8) - param.G + param.U);
+%     dx = [q(5:8);ddq];
+% end
+%% trajectory stuff
+% trajectoryOutputHelper(t);
+%%
+
+% end
+
+function dx = LQR(t,q,K,qstar,qstardot,qstardotdot,linflag)
 
 global param
 Parameters;
-t = t + 1;
-% param.U = -K*q;
-%%ref tracking
+
+t = t*100 + 1;
+
+%ref tracking
 U1 = -K*(q - [qstar(:,t);qstardot(:,t)]);
 
 U2 = param.B \ (-param.A*[qstar(:,t);qstardot(:,t)] + [qstardot(:,t);qstardotdot(:,t)]);
@@ -151,43 +185,6 @@ end
 %%
 
 end
-
-% function dx = LQR(t,q,K,qstar,qstardot,qstardotdot,linflag)
-% 
-% % A= [zeros(4) , eye(4) ; zeros(4,8)];
-% % 
-% % 
-% % B = [zeros(4,1); 1/m1 ; 1/m2 ; 1 ; 1];
-% global param
-% Parameters;
-% t = t + 1;
-% % param.U = -K*q;
-% %%ref tracking
-% U1 = -K*(q - [qstar(:,t);qstardot(:,t)]);
-% 
-% U2 = param.B \ (-param.A*[qstar(:,t);qstardot(:,t)] + [qstardot(:,t);qstardotdot(:,t)]);
-% 
-% param.U = U1 + U2;
-% 
-% param.U = param.U + [0;0;0;g*(m1+m2+mbh)];  %gravity cancellation
-% 
-% if linflag
-%     %%feedback linearisation
-%     fx = [q(5:8);0;0;0;0];
-%     gx = [0;0;0;0;(param.U(1) + m1*q(1)*q(7)^2)/m1;...
-%           (param.U(2) + m2*q(2)*q(7)^2)/m2;...
-%           (param.U(3)  - (2*m1*q(1)*q(5)*q(7) + 2*m2*q(2)*q(6)*q(7)))/(m1*q(1)^2 + m2*q(2)^2 + Ib);...
-%           (param.U(4))/(m1+m2+mbh) - g];
-%     dx = fx + gx;
-% else
-%     ddq = inv(param.M) * (-param.C*q(5:8) - param.G + param.U);
-%     dx = [q(5:8);ddq];
-% end
-% %% trajectory stuff
-% % trajectoryOutputHelper(t);
-% %%
-% 
-% end
 
 
 
