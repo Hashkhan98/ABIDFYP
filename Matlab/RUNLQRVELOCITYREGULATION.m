@@ -1,12 +1,12 @@
 %% Simulate and plot the Tower Crane using LQR and a Linear/Nonlinear Model
-clear;close all;
+clear all;close all;
 
 linflag = 1;  %% 0 for Linear ; 1 for NonLinear
 %% Declare Constants
 Parameters;
 
 %%Weights for Q and R for each stat     e
-Q = diag([1e8 1e8 1e8 1e5 1 1 1 1]);
+Q = diag([2e8 2e8 2e8 2e5 1e5 1e5 1e5 1e5]);
 R = diag(1);
 
 q0 = [0.3536; 0.2149; -0.7854; 0.4000; 0; 0; 0; 0];
@@ -68,7 +68,7 @@ param.B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
 XX = [];
 UU = [];
 
-simtime = 20; % Length of simulation in seconds
+simtime = 5; % Length of simulation in seconds
 T = 0.01; % 
 simstep = [0 T];
 
@@ -95,7 +95,7 @@ end
 toc
 
 %% plotting
-clf;
+clf; close all
 figure(1)
 plot(time, qall(1:4,:))
 
@@ -117,7 +117,17 @@ set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 
 figure(3)
-plot(time(1:length(time)-1),param.Uplot(1:3,:))
+plot(time, gradient(qall(5:8,:)))
+
+hold on
+plot(time,qstardotdot(1:4,:),'r--')
+hold off
+legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',11)
+
+figure(4)
+plot(time(2:end),param.Uplot(1:3,:))
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
   
