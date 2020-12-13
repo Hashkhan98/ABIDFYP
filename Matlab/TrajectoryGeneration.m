@@ -10,12 +10,9 @@ for i = 1:size(q,2)
     [q(:,i),qd(:,i),qdd(:,i)] = IKM(qtemp(:,i),qdtemp(:,i),qddtemp(:,i));
 end
 
-% for i = 1:size(q,2)
-%     qtemp(:,i) = IKM(q(:,i));
-% end
 qd = gradient(q)*100;
 
-qdd = gradient(qd);
+qdd = gradient(qd)*100;
 
 figure(1)
 subplot(3,1,1)

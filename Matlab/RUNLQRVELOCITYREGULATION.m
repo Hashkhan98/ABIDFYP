@@ -6,7 +6,8 @@ linflag = 1;  %% 0 for Linear ; 1 for NonLinear
 Parameters;
 
 %%Weights for Q and R for each stat     e
-Q = diag([2e8 2e8 2e8 2e5 1e5 1e5 1e5 1e5]);
+% Q = diag([2e5 2e5 1e5 0.1e5 2e3 2e3 1e3 0.1e3]);
+Q = diag([1 1 1 1 1 1 1 1]);
 R = diag(1);
 
 q0 = [0.3536; 0.2149; -0.7854; 0.4000; 0; 0; 0; 0];
@@ -28,8 +29,8 @@ dz = q0(8);
 F1 = u0(1);
 F2 = u0(2);
 Tau = u0(3);
-Fz = g*(m1+m2+mbh) +u0(4);
-
+% Fz = g*(m1+m2+mbh) +u0(4);
+Fz = u0(4);
 U = [F1,F2,Tau,Fz]';
 
 %% Define Mass, Coriolis and Gravity Matrix
@@ -117,7 +118,7 @@ set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 
 figure(3)
-plot(time, gradient(qall(5:8,:)))
+plot(time, gradient(qall(5:8,:))*100)
 
 hold on
 plot(time,qstardotdot(1:4,:),'r--')
@@ -127,7 +128,7 @@ set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 
 figure(4)
-plot(time(2:end),param.Uplot(1:3,:))
+plot(time(1:end-1),param.Uplot(1:3,:))
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
   
@@ -143,7 +144,14 @@ U1 = -K*(q - [qstar(:,i);qstardot(:,i)]);
 
 U2 = param.B \ (-param.A*[qstar(:,i);qstardot(:,i)] + [qstardot(:,i);qstardotdot(:,i)]);
 
-param.U = U1 + U2 + [0;0;0;g*(m1+m2+mbh)];  %gravity cancellation
+% param.U = U1 + U2 + [0;0;0;g*(m1+m2+mbh)];  %gravity cancellation
+
+param.U = U1 + U2;  %gravity cancellation
+
+param.U(1) = param.U(1) - m1*q(1)*q(7)^2;
+param.U(2) = param.U(2) - m2*q(2)*q(7)^2;
+param.U(3) = param.U(3)*(m1*q(1)^2 + m2*q(2)^2 + Ib) + 2*m1*q(1)*q(5)*q(7) + 2*m2*q(2)*q(6)*q(7);
+param.U(4) = (param.U(4)+g)*(m1+m2+mbh);
 
 param.Uplot(:,i) = param.U;
 

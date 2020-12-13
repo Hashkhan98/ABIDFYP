@@ -1,4 +1,4 @@
-function u = controller(q0, qgoal, H,tspan,linflag)
+function u = controllervel(q0, qstar,qstardot,qstardotdot, H,tspan,linflag)
 
 persistent U0
 if isempty(U0)
@@ -15,10 +15,10 @@ ubmat=repmat(ub,1,H);
 if linflag
     nonlin = [];
 else
-   nonlin = @(U) nonlcon(U,qgoal, q0,H,tspan);
+   nonlin = @(U) nonlcon(U,qstar,qstardot,qstardotdot, q0,H,tspan);
 end
 options = optimoptions('fmincon','Display','off','Algorithm','sqp','MaxFunEvals',6000,'ConstraintTolerance',1e-3);
-utemp = fmincon(@(U) costvel(U,qgoal, q0,H,tspan) ,U0,A,b,Aeq,beq,lbmat,ubmat,nonlin,options);
+utemp = fmincon(@(U) costvel(U,qstardotdot, q0,H,tspan) ,U0,A,b,Aeq,beq,lbmat,ubmat,nonlin,options);
 % @(U) nonlcon(U,qgoal, q0,H,tspan)
 U0=utemp;
 u = utemp(:,1);

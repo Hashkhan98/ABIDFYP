@@ -4,10 +4,10 @@ clear;close all;
 %% Declare Constants
 Parameters;
 
-q0 = [0.8000; 0.2222; 0; 0.9000; 0; 0; 0; 0];
+q0 = [0.3536; 0.2149; -0.7854; 0.4000; 0; 0; 0; 0];
 u0 = [0 0 0 0]';
 
-qgoal = [0.3,0.3*m1/m2,90*pi/180,0.4 ,0,0,0,0]';
+% qgoal = [0.3,0.3*m1/m2,90*pi/180,0.4 ,0,0,0,0]';
 % q = [r1 r2 theta z]
 r1 = q0(1);
 r2 = q0(2);
@@ -46,7 +46,13 @@ param.M = M;
 param.C = C;
 param.G = G;
 param.U = U;
-     
+
+param.A = [zeros(4) , eye(4) ; zeros(4,8)];
+
+param.B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
+
+[K,P,E]=lqr(param.A,param.B,Q,R);  %k=full state feedback gain.....P= solution to algebric ricaati equation....E= Eigrn values
+
 %feedforward gain, may or may not be used
 % C = [1,1,1,1,0,0,0,0];
 % N_ff = 1\(C/((- A + B * K))* B);
@@ -66,11 +72,20 @@ u(:,1) = [F1,F2,Tau,Fz]';
 qall = zeros(8,H);
 qall(:,1) = q0;
 
+%% Trajectory 
+wpts = [0.25 +0.5 0.5 0.25 0.25;
+        0.25 +0.25 0.5 0.5 0.25;
+        0.4 0.4 0.4 0.4 0.4];
+    
+maxvel = 0.25;
+[qstar,qstardot,qstardotdot] = TrajectoryGeneration(wpts,time,maxvel); 
+
+
 %% sim
 tic
 for i = 1:(simtime/T)
 
-u(:,i) = controller(qall(:, i), qgoal, H,simstep,0);
+u(:,i) = controllervel(qall(:, i), qstar,qstardot,qstardotdot, H,simstep,0);
 
 qall(:,i+1)=massmatrix(qall(:,i),u(:,i),simstep)';
 end

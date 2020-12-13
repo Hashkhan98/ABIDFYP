@@ -24,9 +24,14 @@ dr1 = (x*dx + y*dy)/sqrt(x^2+y^2);
 dr2 = (-0.08+.5+dr1)/3.6;
 dq = (x*dy - dx*y)/(x^2+y^2);
 
-ddr1 = ddx - x*dq^2;
+r = sqrt(x^2 + y^2);
+ddr = (x^3*ddx + x^2*dy^2 + x^2*y*dy + y^2*x*ddx - 2*x*y*dx*dy + y^2*dx^2 + y^3*ddy)/((x^2 + y^2)*sqrt(x^2+y^2));
+ddtheta = ((-y*ddx + x*ddy)*(x^2+y^2)* - (2*x*dx + 2*y*dy)*(x*dy - y*dx))/((x^2+y^2)^2); 
+
+
+ddr1 = ddr - r*dq^2;
 ddr2 = (-0.08+.5+ddr1)/3.6;
-ddq = x*sqrt(ddx^2 + ddy^2) + 2*dr1*dq;
+ddq = r*ddtheta + 2*dr1*dq;
 
 % FKM([r1,r2,q,z]);
 

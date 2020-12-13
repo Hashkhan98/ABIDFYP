@@ -1,12 +1,12 @@
 %% Simulate and plot the Tower Crane using LQR and a Linear/Nonlinear Model
-clear;close all;
+clear all;close all;
 
 linflag = 1;  %% 0 for Linear ; 1 for NonLinear
 %% Declare Constants
 Parameters;
 
 %%Weights for Q and R for each stat     e
-Q = diag([1e6 1e5 1e5 5e3 10 10 10 100]);
+Q = diag([2e5 2e5 1e5 0.1e5 2e3 2e3 1e3 0.1e3]);
 R = diag(1);
 
 q0 = [0.3536; 0.2149; -0.7854; 0.4000; 0; 0; 0; 0];
@@ -95,7 +95,7 @@ end
 toc
 
 %% plotting
-clf;
+clf; close all
 figure(1)
 plot(time, qall(1:4,:))
 
@@ -106,20 +106,30 @@ legend('r1','r2','theta','z','des r1','des r2','des theta','des z')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 
-% figure(2)
-% plot(time, qall(5:8,:))
-% 
-% hold on
-% plot(time,qstardot(1:4,:)*1e3,'r--')
-% hold off
-% legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
-% set(gcf,'color','w')
-% set(gca,'fontweight','bold','fontsize',11)
-% 
-% figure(3)
-% plot(time(1:500),param.Uplot(1:3,:))
-% set(gcf,'color','w')
-% set(gca,'fontweight','bold','fontsize',11)
+figure(2)
+plot(time, qall(5:8,:))
+
+hold on
+plot(time,qstardot(1:4,:),'r--')
+hold off
+legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',11)
+
+figure(3)
+plot(time, gradient(qall(5:8,:))*100)
+
+hold on
+plot(time,qstardotdot(1:4,:),'r--')
+hold off
+legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',11)
+
+figure(4)
+plot(time(2:end),param.Uplot(1:3,:))
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',11)
   
 
 function dx = LQR(t,q,K,qstar,qstardot,qstardotdot,linflag,i)
@@ -133,7 +143,14 @@ U1 = -K*(q - [qstar(:,i);qstardot(:,i)]);
 
 U2 = param.B \ (-param.A*[qstar(:,i);qstardot(:,i)] + [qstardot(:,i);qstardotdot(:,i)]);
 
-param.U = U1 + U2 + [0;0;0;g*(m1+m2+mbh)];  %gravity cancellation
+% param.U = U1 + U2 + [0;0;0;g*(m1+m2+mbh)];  %gravity cancellation
+
+param.U = U1 + U2;  %gravity cancellation
+
+param.U(1) = param.U(1) - m1*q(1)*q(7)^2;
+param.U(2) = param.U(2) - m2*q(2)*q(7)^2;
+param.U(3) = param.U(3)*(m1*q(1)^2 + m2*q(2)^2 + Ib);
+param.U(4) = (param.U(4)+g)*(m1+m2+mbh);
 
 param.Uplot(:,i) = param.U;
 
