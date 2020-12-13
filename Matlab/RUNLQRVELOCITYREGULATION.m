@@ -80,7 +80,7 @@ time = 0:T:simtime;
 %% Trajectory 
 wpts = [0.25 +0.5 0.5 0.25 0.25;
         0.25 +0.25 0.5 0.5 0.25;
-        0.4 0.4 0.4 0.4 0.4];
+        0.4 0.4 0.4 0.4 0.5];
     
 maxvel = 0.25;
 [qstar,qstardot,qstardotdot] = TrajectoryGeneration(wpts,time,maxvel); 
@@ -89,7 +89,7 @@ maxvel = 0.25;
 tic
 for i = 1:(simtime/T)  
 %     qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
-    [~,xx] = ode45(@(t,q) LQR(t,q,K,qstar,qstardot,qstardotdot,linflag,i),simstep,qall(:,i));
+    [~,xx] = ode45(@(t,q) LQR(t,q,K,qstar,qstardot,qstardotdot,i),simstep,qall(:,i));
     qall(:,i+1) = xx(end,:)';
 
 end
@@ -128,17 +128,17 @@ set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 
 figure(4)
-plot(time(1:end-1),param.Uplot(1:3,:))
+plot(time(1:end-1),param.Uplot(1:4,:))
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
   
 
-function dx = LQR(t,q,K,qstar,qstardot,qstardotdot,linflag,i)
+function dx = LQR(t,q,K,qstar,qstardot,qstardotdot,i)
 
 global param
 Parameters;
 
-
+q = q + (rand(8,1) - rand(8,1))*0.001;
 %ref tracking
 U1 = -K*(q - [qstar(:,i);qstardot(:,i)]);
 
@@ -155,23 +155,16 @@ param.U(4) = (param.U(4)+g)*(m1+m2+mbh);
 
 param.Uplot(:,i) = param.U;
 
-if linflag
-    %%feedback linearisation
-    fx = [q(5:8);0;0;0;0];
-    gx = [0;0;0;0;(param.U(1) + m1*q(1)*q(7)^2)/m1;...
-          (param.U(2) + m2*q(2)*q(7)^2)/m2;...
-          (param.U(3)  - (2*m1*q(1)*q(5)*q(7) + 2*m2*q(2)*q(6)*q(7)))/(m1*q(1)^2 + m2*q(2)^2 + Ib);...
-          (param.U(4))/(m1+m2+mbh) - g];
-    dx = fx + gx;
-else
-    ddq = param.M \ (-param.C*q(5:8) - param.G + param.U);
-    dx = [q(5:8);ddq];
-end
-%% trajectory stuff
-% trajectoryOutputHelper(t);
-%%
+%%feedback linearisation
+fx = [q(5:8);0;0;0;0];
+gx = [0;0;0;0;(param.U(1) + m1*q(1)*q(7)^2)/m1;...
+      (param.U(2) + m2*q(2)*q(7)^2)/m2;...
+      (param.U(3)  - (2*m1*q(1)*q(5)*q(7) + 2*m2*q(2)*q(6)*q(7)))/(m1*q(1)^2 + m2*q(2)^2 + Ib);...
+      (param.U(4))/(m1+m2+mbh) - g];
+dx = fx + gx;
 
 end
+
 
 
 
