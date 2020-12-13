@@ -7,12 +7,9 @@ qd = q;
 qdd = qd;
 
 for i = 1:size(q,2)
-    [q(:,i),qd(:,i),qdd(:,i)] = IKM(qtemp(:,i),qdtemp(:,i),qddtemp(:,i));
+    q(:,i) = IKM(qtemp(:,i),qdtemp(:,i),qddtemp(:,i));
 end
 
-% for i = 1:size(q,2)
-%     qtemp(:,i) = IKM(q(:,i));
-% end
 qd = gradient(q)*100;
 
 qdd = gradient(qd)*100;
@@ -51,7 +48,19 @@ plot(tvec, qdd)
 xlabel('t')
 ylabel('Acceleration')
 legend('X','Y')
-% 
+
+% figure(3)
+% [X,Y,Z] = pol2cart(q(3,:),q(1,:),q(4,:));
+% plot3(X(:),Y(:),Z(:),'r--')
+% axis([-1 1 -1 1 0 1]);    
+% view(0,90)
+
+figure(3)
+% [X,Y,Z] = pol2cart(q(3,:),q(1,:),q(4,:));
+plot3(qtemp(:),Y(:),Z(:),'r--')
+axis([-1 1 -1 1 0 1]);    
+view(0,90)
+
 % figure(3)
 % plot3(wpts(1,:),wpts(2,:),wpts(3,:))
 end

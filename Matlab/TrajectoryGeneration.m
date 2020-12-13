@@ -1,13 +1,13 @@
 function [q,qd,qdd] = TrajectoryGeneration(wpts,simspan,maxvel) 
     
-[qtemp, qdtemp, qddtemp, tvec, pp] = trapveltraj(wpts, length(simspan), 'PeakVelocity' , maxvel);
+[qtemp, qdtemp, qddtemp, tvec, pp] = trapveltraj(wpts, length(simspan));
 
 q = zeros(4,size(qtemp,2));
 qd = q;
 qdd = qd;
 
 for i = 1:size(q,2)
-    [q(:,i),qd(:,i),qdd(:,i)] = IKM(qtemp(:,i),qdtemp(:,i),qddtemp(:,i));
+    q(:,i) = IKM(qtemp(:,i),qdtemp(:,i),qddtemp(:,i));
 end
 
 qd = gradient(q)*100;
@@ -48,7 +48,16 @@ plot(tvec, qdd)
 xlabel('t')
 ylabel('Acceleration')
 legend('X','Y')
-% 
+
+figure(3)
+[X,Y,Z] = pol2cart(q(3,:),q(1,:),q(4,:));
+plot3(X(:),Y(:),Z(:),'b--')
+hold on
+% [X,Y,Z] = pol2cart(q(3,:),q(1,:),q(4,:));
+plot3(qtemp(1,:),qtemp(2,:),qtemp(3,:),'r--')
+axis([-1 1 -1 1 0 1]);    
+view(0,90)
+hold off
 % figure(3)
 % plot3(wpts(1,:),wpts(2,:),wpts(3,:))
 end

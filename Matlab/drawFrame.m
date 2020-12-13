@@ -1,4 +1,4 @@
-function drawFrame(A0ee,fig)
+function [fig] = drawFrame(A0ee,fig)
 
 %Rotate coordinate frame T00 by A01
 x_line = A0ee*[A0ee(1:3,1:3),[0.05;0;0];[0,0,0,1]];

@@ -5,12 +5,29 @@ linflag = 1;  %% 0 for Linear ; 1 for NonLinear
 %% Declare Constants
 Parameters;
 
+simtime = 5; % Length of simulation in seconds
+T = 0.01; % 
+simstep = [0 T];
+
+time = 0:T:simtime;
+%% Trajectory 
+wpts = [-0.5 +0.5 0.5 -0.5 -0.5;
+        -0.5 -0.5 0.5 0.5 0.5;
+        0.4 0.4 0.4 0.4 0.4];
+% len = [1:5];
+% 
+% wpts = [0.25 + sin(len)*0.02;
+%         0.25 + cos(len)*0.02;
+%         ones(1,length(len))*0.4];
+maxvel = 0.25;
+[qstar,qstardot,qstardotdot] = TrajectoryGeneration(wpts,time,maxvel); 
+
 %%Weights for Q and R for each stat     e
-% Q = diag([2e5 2e5 1e5 0.1e5 2e3 2e3 1e3 0.1e3]);
-Q = diag([1 1 1 1 1 1 1 1]);
+Q = diag([2e5 2e5 1e5 0.1e5 2e3 2e3 1e3 0.1e3]);
+% Q = diag([1 1 1 1 1 1 1 1]);
 R = diag(1);
 
-q0 = [0.3536; 0.2149; -0.7854; 0.4000; 0; 0; 0; 0];
+q0 = [qstar(:,1);qstardot(:,1)];
 u0 = [0 0 0 0]';
 
 % qstar = [0.7,0.8*m1/m2,20*pi/180,0.8 ,0,0,0,0]';
@@ -63,29 +80,11 @@ param.B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
 % C = [1,1,1,1,0,0,0,0];
 % N_ff = 1\(C/((- A + B * K))* B);
 
-
-%%
- 
-XX = [];
-UU = [];
-
-simtime = 5; % Length of simulation in seconds
-T = 0.01; % 
-simstep = [0 T];
+%% SIM
 
 qall = zeros(8,simtime/T);
 qall(:,1) = q0;
 
-time = 0:T:simtime;
-%% Trajectory 
-wpts = [0.25 +0.5 0.5 0.25 0.25;
-        0.25 +0.25 0.5 0.5 0.25;
-        0.4 0.4 0.4 0.4 0.5];
-    
-maxvel = 0.25;
-[qstar,qstardot,qstardotdot] = TrajectoryGeneration(wpts,time,maxvel); 
-
-%% SIM
 tic
 for i = 1:(simtime/T)  
 %     qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
@@ -131,14 +130,22 @@ figure(4)
 plot(time(1:end-1),param.Uplot(1:4,:))
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
-  
 
-function dx = LQR(t,q,K,qstar,qstardot,qstardotdot,i)
+figure(7)
+plot3(wpts(1,:),wpts(2,:),wpts(3,:),'r-')
+axis([-1 1 -1 1 0 1]);    
+view(0,90)
+%%
+for i = 1:10:length(time)
+   plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)]);
+end
+%% 
+function dx = LQR(~,q,K,qstar,qstardot,qstardotdot,i)
 
 global param
 Parameters;
 
-q = q + (rand(8,1) - rand(8,1))*0.001;
+% q = q + (rand(8,1) - rand(8,1))*0.001;
 %ref tracking
 U1 = -K*(q - [qstar(:,i);qstardot(:,i)]);
 
