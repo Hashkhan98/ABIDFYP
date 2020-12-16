@@ -4,7 +4,30 @@ clear;close all;
 %% Declare Constants
 Parameters;
 
-q0 = [0.3536; 0.2149; -0.7854; 0.4000; 0; 0; 0; 0];
+simtime = 5; % Length of simulation in seconds
+T = 0.01; % 
+simstep = [0 T];
+
+time = 0:T:simtime;
+
+%% Trajectory 
+wpts = [-0.5 +0.5 0.5 -0.5 -0.5;
+        -0.5 -0.5 0.5 0.5 -0.5;
+        0.4 0.4 0.4 0.4 0.4];
+% len = [1:5];
+% 
+% wpts = [0.25 + sin(len)*0.02;
+%         0.25 + cos(len)*0.02;
+%         ones(1,length(len))*0.4];
+maxvel = 0.25;
+[qstar,qstardot,qstardotdot] = TrajectoryGeneration(wpts,time,maxvel); 
+
+%%Weights for Q and R for each stat     e
+Q = diag([2e5 2e5 1e5 0.1e5 2e3 2e3 1e3 0.1e3]);
+% Q = diag([1 1 1 1 1 1 1 1]);
+R = diag(1);
+
+q0 = [qstar(:,1);qstardot(:,1)];
 u0 = [0 0 0 0]';
 
 % qgoal = [0.3,0.3*m1/m2,90*pi/180,0.4 ,0,0,0,0]';
@@ -61,25 +84,10 @@ param.B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
 %%
 H = 3;
 
-simtime = 5; % Length of simulation in seconds
-T = 0.01; % 
-simstep = [0 T];
-
-time = 0:T:simtime;
-
 u = zeros(4,H);
 u(:,1) = [F1,F2,Tau,Fz]';
 qall = zeros(8,H);
 qall(:,1) = q0;
-
-%% Trajectory 
-wpts = [0.25 +0.5 0.5 0.25 0.25;
-        0.25 +0.25 0.5 0.5 0.25;
-        0.4 0.4 0.4 0.4 0.4];
-    
-maxvel = 0.25;
-[qstar,qstardot,qstardotdot] = TrajectoryGeneration(wpts,time,maxvel); 
-
 
 %% sim
 tic
@@ -87,7 +95,7 @@ for i = 1:(simtime/T)
 
 u(:,i) = controllervel(qall(:, i), qstar,qstardot,qstardotdot, H,simstep,0);
 
-qall(:,i+1)=massmatrix(qall(:,i),u(:,i),simstep)';
+qall(:,i+1)= massmatrix(qall(:,i),u(:,i),simstep)';
 end
 toc
 %% plotting

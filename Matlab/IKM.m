@@ -1,6 +1,11 @@
 function [pos] = IKM(posvec,velvec,accvec)
 
 Parameters_DH
+% persistent q_0
+% if q_0 == []
+%     q_0 = 0;
+% end
+
 m1 = 1;
 m2 = 3.6;
 
@@ -20,11 +25,12 @@ z = posvec(3);
 % r1 = sqrt(x^2+y^2);
 r2 = (-0.08+.5+r1)/3.6;
 
-% if q >= pi - 0.01
+% if q >= pi 
 %     q = pi + mod(q,pi);
-% else -q <= pi + 0.001
+% else -q <= -pi 
 %     q = -pi - mod(q,pi);
 % end
+
 % dr1 = (x*dx + y*dy)/sqrt(x^2+y^2);
 % dr2 = (-0.08+.5+dr1)/3.6;
 % dq = (x*dy - dx*y)/(x^2+y^2);

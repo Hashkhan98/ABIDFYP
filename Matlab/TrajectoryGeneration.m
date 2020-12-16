@@ -1,6 +1,6 @@
 function [q,qd,qdd] = TrajectoryGeneration(wpts,simspan,maxvel) 
     
-[qtemp, qdtemp, qddtemp, tvec, pp] = trapveltraj(wpts, length(simspan));
+[qtemp, qdtemp, qddtemp, tvec, pp] = trapveltraj(wpts, length(simspan),'EndTime',0.01);
 
 q = zeros(4,size(qtemp,2));
 qd = q;
@@ -10,6 +10,14 @@ for i = 1:size(q,2)
     q(:,i) = IKM(qtemp(:,i),qdtemp(:,i),qddtemp(:,i));
 end
 
+q0 = q(3,:)*10;
+temp = unwrap(q0);
+q(3,:) = temp/10;
+% %%
+% clf;
+% figure(10)
+% plot(tvec,q0/10,'r--',tvec,q(3,:),'b--')
+%%
 qd = gradient(q)*100;
 
 qdd = gradient(qd)*100;
