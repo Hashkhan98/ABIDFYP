@@ -4,7 +4,7 @@ clear;close all;
 %% Declare Constants
 Parameters;
 
-simtime = 5; % Length of simulation in seconds
+simtime = 10; % Length of simulation in seconds
 T = 0.01; % 
 simstep = [0 T];
 
@@ -93,7 +93,7 @@ qall(:,1) = q0;
 tic
 for i = 1:(simtime/T)
 
-u(:,i) = controllervel(qall(:, i), qstar,qstardot,qstardotdot, H,simstep,0);
+u(:,i) = controllervel(qall(:, i), qstar,qstardot,qstardotdot, H,simstep,0,i,time);
 
 qall(:,i+1)= massmatrix(qall(:,i),u(:,i),simstep)';
 end
@@ -142,3 +142,6 @@ set(gca,'fontweight','bold','fontsize',11)
 % plot((1:(max(size(qall))))*simstep,qall(:,1:4))
 % legend('r1','r2','theta','z')
 
+for i = 1:10:length(time)
+   plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)]);
+end
