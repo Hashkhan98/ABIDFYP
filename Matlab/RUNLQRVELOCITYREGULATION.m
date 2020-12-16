@@ -126,6 +126,7 @@ set(gca,'fontweight','bold','fontsize',11)
 
 figure(4)
 plot(time(1:end-1),param.Uplot(1:4,:))
+legend('Fr1','Fr2','Ftheta','Fz')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 

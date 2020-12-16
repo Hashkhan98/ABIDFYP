@@ -15,7 +15,7 @@ for i = 1:H
     q1dot = gradient(q1);
 %    qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
     
-ctemp = ctemp + (([qstar(:,i);qstardot(:,i)] - q1(:,i))'*Q*([qstar(:,i);qstardot(:,i)] - q1(:,i))); 
+ctemp = ctemp + (([qstar(:,i);qstardot(:,i)] - q1(:,i))'*Q*([qstar(:,i);qstardot(:,i)] - q1(:,i)))*(i^2) + 1/2*(U(:,i)'*R*U(:,i)) + ([qstardot(:,i);qstardotdot(:,i)] - q1dot(:,i))'*Q*([qstardot(:,i);qstardotdot(:,i)] - q1dot(:,i))*(i^2);
 
 % ctemp = ctemp + (([qstar(:,i);qstardot(:,i)] - q1(:,i))'*Q*([qstar(:,i);qstardot(:,i)] - q1(:,i)))*(i^2) + 1/2*(U(:,i)'*R*U(:,i)) + ([qstardot(:,i);qstardotdot(:,i)] - q1dot(:,i))'*Q*([qstardot(:,i);qstardotdot(:,i)] - q1dot(:,i))*(i^2);
 % (q1 - [qstar(:,i:H);qstardot(:,i:H)])

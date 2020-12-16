@@ -104,7 +104,7 @@ figure(1)
 plot(time, qall(1:4,:))
 
 hold on
-plot(time,repmat(qgoal(1:4,:),1,length(time)),'r--')
+plot(time,qstar,'r--')
 hold off
 legend('r1','r2','theta','z','des r1','des r2','des theta','des z')
 set(gcf,'color','w')
@@ -116,14 +116,15 @@ figure(2)
 plot(time, qall(5:8,:))
 
 hold on
-plot(time,repmat(qgoal(5:8,:),1,length(time)),'r--')
+plot(time,qstardot,'r--')
 hold off
 legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 
 figure(3)
-plot(time(1:500),u)
+plot(time(1:length(time)-1),u)
+legend('Fr1','Fr2','Ftheta','Fz')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',11)
 

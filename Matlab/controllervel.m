@@ -8,14 +8,14 @@ A = [];
 b = [];
 Aeq = [];
 beq = [];
-lb = [-5 ,-5 , -5, -5]';
-ub = [5 ,5 ,5 ,5]';
+lb = [-5 ,-5 , -5, -5 + 58]';
+ub = [5 ,5 ,5 ,5 + 58]';
 lbmat = repmat(lb,1,H);
 ubmat=repmat(ub,1,H);
 if linflag
     nonlin = [];
 else
-   nonlin = @(U) nonlcon(U,qstar,qstardot,qstardotdot, q0,H,tspan);
+   nonlin = @(U) nonlcon(U,qstar, q0,H,tspan);
 end
 options = optimoptions('fmincon','Display','off','Algorithm','sqp','MaxFunEvals',6000,'ConstraintTolerance',1e-3);
 utemp = fmincon(@(U) costvel(U,qstar,qstardot,qstardotdot, q0,H,tspan) ,U0,A,b,Aeq,beq,lbmat,ubmat,nonlin,options);

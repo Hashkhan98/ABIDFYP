@@ -10,7 +10,7 @@ g = 9.81;
 lb = 1.4;
 Ib = 1/12 * mbh * lb^2 + mbh * (lb/2)^2 + 1/2 * mbv * bvr^2; 
 
-Fz = g*(m1+m2+mbh) +u(4);
+Fz = u(4);
 
 % q = [r1 r2 theta z]
 r1 = q0(1);
@@ -54,7 +54,7 @@ param.M = M;
 param.C= C;
 param.G = G;
 param.U=U;
-t=0;
+
 xx = ode4(@(t,q) simulation1(t,q,param),tspan,q0);
 
 q1 = xx(end, :)'; 
