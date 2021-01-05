@@ -9,9 +9,21 @@ simstep = [0 T];
 
 time = 0:T:simtime;
 %% Trajectory 
-wpts = [-0.5 +0.5 0.5 -0.5 -0.5;
-        -0.5 -0.5 0.5 0.5 -0.5;
+
+% r= 0:0.01:1;
+% Theta = -pi:2*pi/100:pi;
+% z =repmat(0.4,1,101);
+% [x,y,z] = pol2cart(Theta,r,z);
+% 
+% wpts = [x;y;z];
+
+wpts = [-0.5 +0.5 0.4 -0.5 -0.5;
+        -0.5 -0.5 0.4 0.5 -0.5;
         0.4 0.4 0.4 0.4 0.4];
+
+% wpts = [-0.5 +0.5 0.5 -0.5 -0.5;
+%         -0.5 -0.5 0.5 0.5 -0.5;
+%         0.4 0.4 0.4 0.4 0.4];
 % len = [1:5];
 % 
 % wpts = [0.25 + sin(len)*0.02;
@@ -132,8 +144,11 @@ set(gca,'fontweight','bold','fontsize',11)
 
 figure(7)
 plot3(wpts(1,:),wpts(2,:),wpts(3,:),'r-')
-axis([-1 1 -1 1 0 1]);    
-view(0,90)
+axis([-1 1 -1 1 0 1]);
+xlabel('x')
+ylabel('y')
+zlabel('z')
+% view(0,90)
 
 %%
 % clf;

@@ -23,7 +23,6 @@ z = posvec(3);
 [q,r1,z] = cart2pol(x,y,z);
 % q = atan2(y,x);
 % r1 = sqrt(x^2+y^2);
-r1=r1;
 r2 = (-0.08+.5+r1)/3.6;
 
 % if q >= pi 
