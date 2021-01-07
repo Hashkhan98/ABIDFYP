@@ -98,14 +98,14 @@ end
 toc
 %% plotting
 clf;
-figure(1)
+fig = figure(1)
 plot(time, qall([1,2,4],:),'LineWidth',3)
 ylabel('Displacement (m)')
 hold on
 plot(time,qstar([1,2,4],:),'r--','LineWidth',2)
 
 yyaxis right
-AX = plot(time, qall(3,:),'c','LineWidth',3)
+AX = plot(time, qall(3,:),'c','LineWidth',3);
 ylabel('Displacement (Rad)')
 plot(time,qstar(3,:),'m--','LineWidth',2)
 hold off
@@ -113,6 +113,9 @@ hold off
 legend('r1','r2','z','des r1','des r2','des z','theta','des theta')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
+left_color = [1 1 1];
+right_color = [0 0 1];
+set(fig,'defaultAxesColorOrder',[left_color; right_color]);
 title('Set-Point Regulation of Position')
 xlabel('Time (s)')
 %%

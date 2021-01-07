@@ -17,7 +17,7 @@ global   m1_a1 m1_a2 m1_a3 ...
         
 r1 = pose(1);
 r2 = pose(2);
-q  = pose(3) - pi/2;
+q  = pose(3);
 z  = pose(4);
 
 % center of gravity of beams
@@ -101,7 +101,7 @@ fig(6) = plot3(0,0, rB_m2(3), 'ro','LineWidth',6,'MarkerSize',4*3,'MarkerFaceCol
 
 fig(10) = plot3([rB_m1(1)],[rB_m1(2)], [rB_m1(3)], 'rs','LineWidth',2,'MarkerSize',2,'MarkerFaceColor','r','MarkerEdgeColor','r');
 
-% drawFrame(T01)
+drawFrame(T01)
 [x1 , y1] = meshgrid(-1:0.1:1); % Generate x and y data
 z1 = zeros(size(x1, 1)); % Generate z data
 surf(x1, y1, z1) % Plot the surface
