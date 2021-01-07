@@ -78,7 +78,7 @@ hold on
 
 axis([-1 1 -1 1 0 1]);    
 view(0,90)
-title('Pose of the Robot')
+title('Robot tracking desired trajectory')
 
 xlabel('x','Fontsize',20);
 ylabel('y','Fontsize',20);
@@ -94,7 +94,6 @@ fig(3) = plot3([rB_mc1(1), rB_beam_m2(1)],[rB_mc1(2), rB_beam_m2(2)], [rB_mc1(3)
 fig(4) = plot3([rB_m1(1)],[rB_m1(2)], [rB_m1(3)], 'rs','LineWidth',6,'MarkerSize',4,'MarkerFaceColor','k','MarkerEdgeColor','k');
 fig(5) = plot3([rB_m2(1)],[rB_m2(2)], [rB_m2(3)], 'rs','LineWidth',6,'MarkerSize',4*3,'MarkerFaceColor','k','MarkerEdgeColor','k');
 fig(6) = plot3(0,0, rB_m2(3), 'ro','LineWidth',6,'MarkerSize',4*3,'MarkerFaceColor','k','MarkerEdgeColor','k');
-
 % fig(7) = drawFrame(T01,fig);
 % fig(8) = drawFrame(T03,fig);
 % fig(9) = drawFrame(T04,fig);

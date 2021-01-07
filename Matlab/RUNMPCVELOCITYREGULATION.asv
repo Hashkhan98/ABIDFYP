@@ -98,47 +98,74 @@ end
 toc
 %% plotting
 clf;
-fig = figure(1)
+fig = figure(1);
+% left_color = [.1 .1 0];
+% right_color = [0 .5 .5];
+
 plot(time, qall([1,2,4],:),'LineWidth',3)
 ylabel('Displacement (m)')
 hold on
 plot(time,qstar([1,2,4],:),'r--','LineWidth',2)
 
 yyaxis right
-AX = plot(time, qall(3,:),'c','LineWidth',3);
+ax = gca;
+ax.YColor = 'g';
+plot(time, qall(3,:),'g','LineWidth',3);
 ylabel('Displacement (Rad)')
-plot(time,qstar(3,:),'m--','LineWidth',2)
+plot(time,qstar(3,:),'r--','LineWidth',2)
 hold off
 
-legend('r1','r2','z','des r1','des r2','des z','theta','des theta')
+legend('r1','r2','z','des r1','des r2','des theta','des z','theta')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
-left_color = [1 1 1];
-right_color = [0 0 1];
-set(fig,'defaultAxesColorOrder',[left_color; right_color]);
-title('Set-Point Regulation of Position')
 xlabel('Time (s)')
+xaxis([0 length(time)*T])
+title('Velocity tracking of desired trajectory')
+
 %%
 
 RMSE = sqrt(mean((qall(1,:)' - qstar(1,:)').^2))
 % plot(time,RMSE)
 %%
 figure(2)
-plot(time, qall(5:8,:))
-
+plot(time, qall([5,6,8],:),'LineWidth',3)
 hold on
-plot(time,qstardot,'r--')
+plot(time,qstardot([1,2,4],:),'r--','LineWidth',3)
+ylabel('Displacement (m/s)')
+
+yyaxis right
+ax = gca;
+ax.YColor = 'g';
+plot(time, qall(7,:),'g','LineWidth',3);
+ylabel('Displacement (Rad/s)')
+plot(time,qstardot(3,:),'r--','LineWidth',2)
+
 hold off
-legend('dr1','dr2','dtheta','dz','des dr1','des dr2','des dtheta','des dz')
+legend('dr1','dr2','dz','des dr1','des dr2','des dz','dtheta','des dtheta')
 set(gcf,'color','w')
-set(gca,'fontweight','bold','fontsize',11)
-
+set(gca,'fontweight','bold','fontsize',22)
+xlabel('Time (s)')
+xaxis([0 length(time)*T])
+title('Velocity tracking of desired trajectory')
+%%
 figure(3)
-plot(time(1:length(time)-1),u)
-legend('Fr1','Fr2','Ftheta','Fz')
-set(gcf,'color','w')
-set(gca,'fontweight','bold','fontsize',11)
+subplot(2,1,1)
+plot(time(1:length(time)-1),u(1:3,:))
+legend('Fr1','Fr2','Ftheta')
+xlabel('Time (s)')
+xaxis([0 length(time)*T])
+ylabel('Torque (N.m)')
 
+subplot(2,1,2)
+plot(time(1:length(time)-1),u(4,:))
+legend('Fz')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',2)
+xlabel('Time (s)')
+ylabel('Force (N.m)')
+xaxis([0 length(time)*T])
+sgtitle('Control Forces required to maintain trajectory')
+%%
 figure(4)
 plot(time,qall(1,:)*m1,'k--',time,-qall(2,:)*m2,'b--',time,repmat(0.42,1,length(time)),'c')
 hold on
@@ -150,9 +177,9 @@ xlabel('Time (s)')
 
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
-axis([0 12 -1.5 1])
+xaxis([0 length(time)*T])
 % (-0.08+0.5+r1)/m2;
-
+%%
 for i = 1:10:length(time)
    plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)]);
 end

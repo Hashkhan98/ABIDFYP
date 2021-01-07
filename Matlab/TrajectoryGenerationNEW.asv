@@ -2,8 +2,8 @@ function [q,qd,qdd,t,wpts] = TrajectoryGenerationNEW(maxvel)
 
 %%
 wpts = csvread('LOGOxyztarg.csv');
-wpts = wpts(:,1:3)'*0.005;
-wpts(1,:) = wpts(1,:) - 1.5;
+wpts = wpts(:,1:3)'*0.01;
+wpts(1,:) = wpts(1,:) - 
 %%
 [TG, t, info] = mstraj(wpts',[maxvel maxvel maxvel],[], [] ,0.01,0.1);
 
@@ -12,11 +12,6 @@ q = zeros(4,size(TG,1));
 for i = 1:size(q,2)
     q(:,i) = IKM(TG(i,:),[],[]);
 end
-
-q0 = q(3,:)*10;
-temp = unwrap(q0);
-q(3,:) = temp/10;
-
 qd = gradient(q)*100;
  
 qdd = gradient(qd)*100;
