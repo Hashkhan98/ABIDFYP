@@ -17,14 +17,23 @@ time = 0:T:simtime;
 % 
 % wpts = [x;y;z];
 
-wpts = [-0.5 +0.15 0.4 -0.5;
-        -0.5 -0.5 0.4 0.5;
-        0.4 0.4 0.4 0.4];
+wpts = [-0.5 +0.5 0.4 -0.5 -0.5;
+        -0.5 -0.5 0.4 0.5 -0.5;
+        0.4 0.4 0.4 0.4 0.4];
 
+% wpts = [-0.5 +0.5 0.5 -0.5 -0.5;
+%         -0.5 -0.5 0.5 0.5 -0.5;
+%         0.4 0.4 0.4 0.4 0.4];
+% len = [1:5];
+% 
+% wpts = [0.25 + sin(len)*0.02;
+%         0.25 + cos(len)*0.02;
+%         ones(1,length(len))*0.4];
 maxvel = 0.25;
-[qstar,qstardot,qstardotdot,t] = TrajectoryGenerationNEW(wpts,maxvel); 
+[qstar,qstardot,qstardotdot] = TrajectoryGeneration(wpts,time,maxvel); 
 
-time = t;
+qstar = [qstar,repmat(qstar(:,end)
+
 %%Weights for Q and R for each stat     e
 Q = diag([2e5 2e5 1e5 0.1e5 2e3 2e3 1e3 0.1e3]);
 % Q = diag([1 1 1 1 1 1 1 1]);
@@ -85,11 +94,11 @@ param.B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
 
 %% SIM
 
-qall = zeros(8,length(time));
+qall = zeros(8,simtime/T);
 qall(:,1) = q0;
 
 tic
-for i = 1:length(time)-1  
+for i = 1:(simtime/T)  
 %     qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
     [~,xx] = ode45(@(t,q) LQR(t,q,K,qstar,qstardot,qstardotdot,i),simstep,qall(:,i));
     qall(:,i+1) = xx(end,:)';

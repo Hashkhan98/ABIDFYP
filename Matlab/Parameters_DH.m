@@ -17,7 +17,7 @@ m1_a3 = 0;
 
 
 % link twist angles corresponding to DH parameter Alpha_n
-alpha_m1_1 = 0;     alpha_m1_2 = -pi/2;
+alpha_m1_1 = 0;     alpha_m1_2 = pi/2;
 alpha_m1_3 = 0;
 %% Mass 2
 global   m2_a1 m2_a2 m2_a3 ...
@@ -31,7 +31,7 @@ m2_a3 = 0;
 
 
 % link twist angles corresponding to DH parameter Alpha_n
-alpha_m2_1 = 0;     alpha_m2_2 = pi/2;
+alpha_m2_1 = 0;     alpha_m2_2 = -pi/2;
 alpha_m2_3 = 0;
 %% Beam Lengths
 lb_m1 = 1;

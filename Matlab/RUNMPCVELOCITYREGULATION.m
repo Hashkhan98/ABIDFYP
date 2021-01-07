@@ -11,16 +11,14 @@ simstep = [0 T];
 time = 0:T:simtime;
 
 %% Trajectory 
-wpts = [-0.5 +0.5 0.4 -0.5 -0.5;
-        -0.5 -0.5 0.4 0.5 -0.5;
-        0.4 0.4 0.4 0.4 0.4];
-% len = [1:5];
-% 
-% wpts = [0.25 + sin(len)*0.02;
-%         0.25 + cos(len)*0.02;
-%         ones(1,length(len))*0.4];
+wpts = [-0.5 +0.5 0.5 -0.5;
+        -0.5 -0.5 0.5 0.5;
+        0.4 0.4 0.4 0.4];
+
 maxvel = 0.25;
-[qstar,qstardot,qstardotdot] = TrajectoryGeneration(wpts,time,maxvel); 
+[qstar,qstardot,qstardotdot,t] = TrajectoryGenerationNEW(wpts,maxvel); 
+
+time = t; 
 
 %%Weights for Q and R for each stat     e
 Q = diag([2e5 2e5 1e5 0.1e5 2e3 2e3 1e3 0.1e3]);
