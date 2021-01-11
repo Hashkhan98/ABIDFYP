@@ -17,7 +17,7 @@ global   m1_a1 m1_a2 m1_a3 ...
         
 r1 = pose(1);
 r2 = pose(2);
-q  = pose(3);
+q  = pose(3) - pi/2;
 z  = pose(4);
 
 % center of gravity of beams
@@ -78,7 +78,7 @@ hold on
 
 axis([-1 1 -1 1 0 1]);    
 view(0,90)
-title('Pose of the Robot')
+title('Robot tracking desired trajectory')
 
 xlabel('x','Fontsize',20);
 ylabel('y','Fontsize',20);
@@ -94,18 +94,22 @@ fig(3) = plot3([rB_mc1(1), rB_beam_m2(1)],[rB_mc1(2), rB_beam_m2(2)], [rB_mc1(3)
 fig(4) = plot3([rB_m1(1)],[rB_m1(2)], [rB_m1(3)], 'rs','LineWidth',6,'MarkerSize',4,'MarkerFaceColor','k','MarkerEdgeColor','k');
 fig(5) = plot3([rB_m2(1)],[rB_m2(2)], [rB_m2(3)], 'rs','LineWidth',6,'MarkerSize',4*3,'MarkerFaceColor','k','MarkerEdgeColor','k');
 fig(6) = plot3(0,0, rB_m2(3), 'ro','LineWidth',6,'MarkerSize',4*3,'MarkerFaceColor','k','MarkerEdgeColor','k');
-
 % fig(7) = drawFrame(T01,fig);
 % fig(8) = drawFrame(T03,fig);
 % fig(9) = drawFrame(T04,fig);
 
 fig(10) = plot3([rB_m1(1)],[rB_m1(2)], [rB_m1(3)], 'rs','LineWidth',2,'MarkerSize',2,'MarkerFaceColor','r','MarkerEdgeColor','r');
 
-drawFrame(T01)
+% drawFrame(T01)
 [x1 , y1] = meshgrid(-1:0.1:1); % Generate x and y data
 z1 = zeros(size(x1, 1)); % Generate z data
 surf(x1, y1, z1) % Plot the surface
 drawnow
+%%
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',22)
+legend(fig([1,4,5,6,10]),{'r','o','b','o','t'},'interpreter','latex','Location','northeastoutside')
+%%
 delete([fig(1),fig(2),fig(3),fig(4),fig(5),fig(6)])
 
 end

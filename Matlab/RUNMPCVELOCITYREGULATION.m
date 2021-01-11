@@ -11,12 +11,9 @@ simstep = [0 T];
 time = 0:T:simtime;
 
 %% Trajectory 
-wpts = [-0.5 +0.5 0.5 -0.5;
-        -0.5 -0.5 0.5 0.5;
-        0.4 0.4 0.4 0.4];
 
-maxvel = 0.25;
-[qstar,qstardot,qstardotdot,t] = TrajectoryGenerationNEW(wpts,maxvel); 
+maxvel = 0.125;
+[qstar,qstardot,qstardotdot,t] = TrajectoryGenerationNEW(maxvel,T); 
 
 time = t; 
 
@@ -91,7 +88,7 @@ qall(:,1) = q0;
 tic
 for i = 1:length(time)-1
 
-u(:,i) = controllervel(qall(:, i) + rand(8,1)*0.001 - rand(8,1)*0.001, qstar,qstardot,qstardotdot, H,simstep,0,i,time);
+u(:,i) = controllervel(qall(:, i), qstar,qstardot,qstardotdot, H,simstep,0,i,time);
 
 qall(:,i+1)= massmatrix(qall(:,i),u(:,i),simstep)';
 end
@@ -102,20 +99,21 @@ fig = figure(1);
 % left_color = [.1 .1 0];
 % right_color = [0 .5 .5];
 
-plot(time, qall([1,2,4],:),'LineWidth',3)
-ylabel('Displacement (m)')
+p([1:3]) =plot(time, qall([1,2,4],:),'LineWidth',3);
+ylabel('$\mathbf{Position(m)}$','interpreter','latex')
 hold on
-plot(time,qstar([1,2,4],:),'r--','LineWidth',2)
+plot(time,qstar([1,2,4],:),'r--','LineWidth',2);
 
 yyaxis right
 ax = gca;
 ax.YColor = [20 155 20]/256;
-plot(time, qall(3,:),'color',[20 155 20]/256,'LineWidth',3);
-ylabel('Displacement (Rad)')
-plot(time,qstar(3,:),'r--','LineWidth',2)
+p(4) = plot(time, qall(3,:)*180/pi,'color',[20 155 20]/256,'LineWidth',3);
+ylabel('$\mathbf{Position(degrees)}$','interpreter','latex')
+p(5) = plot(time,qstar(3,:)*180/pi,'r--','LineWidth',2);
 hold off
 
-legend('r1','r2','z','des r1','des r2','des theta','des z','theta')
+legend(p(1:5),{'Actual $r_{1}$','Actual $r_{2}$','Actual $z$','Actual $\theta$','Desired Trajectory'},'interpreter','latex','Location','northeastoutside')
+% legend(p([1:4]),'r1','r 2','z','','des r2','des theta','des z','theta')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
 xlabel('Time (s)')
@@ -127,31 +125,65 @@ title('Position tracking of desired trajectory')
 RMSE = sqrt(mean((qall(1,:)' - qstar(1,:)').^2))
 % plot(time,RMSE)
 %%
-figure(2)
-plot(time, qall([5,6,8],:),'LineWidth',3)
+fig = figure(2);
+clf;
+% left_color = [.1 .1 0];
+% right_color = [0 .5 .5];
+
+p([1:3]) =plot(time, qall([5,6,8],:),'LineWidth',3);
+ylabel('$\mathbf{Velocity(\frac{m}{s}}$)','interpreter','latex')
 hold on
-plot(time,qstardot([1,2,4],:),'r--','LineWidth',3)
-ylabel('Displacement (m/s)')
+plot(time,qstardot([1,2,4],:),'r--','LineWidth',2);
 
 yyaxis right
 ax = gca;
-ax.YColor = 'g';
-plot(time, qall(7,:),'g','LineWidth',3);
-ylabel('Displacement (Rad/s)')
-plot(time,qstardot(3,:),'r--','LineWidth',2)
-
+ax.YColor = [20 155 20]/256;
+p(4) = plot(time, qall(7,:),'color',[20 155 20]/256,'LineWidth',3);
+ylabel('$\mathbf{Velocity(\frac{rad}{s}}$)','interpreter','latex')
+p(5) = plot(time,qstardot(3,:),'r--','LineWidth',2);
 hold off
-legend('dr1','dr2','dz','des dr1','des dr2','des dz','dtheta','des dtheta')
+
+legend(p(1:5),{'Actual $\dot{r_{1}}$','Actual $\dot{r_{2}}$','Actual $\dot{z}$','Actual $\dot{\theta}$','Desired Trajectory'},'interpreter','latex','Location','northeastoutside')
+% legend(p([1:4]),'r1','r 2','z','','des r2','des theta','des z','theta')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
 xlabel('Time (s)')
 xaxis([0 length(time)*T])
 title('Velocity tracking of desired trajectory')
 %%
+%%
+fig = figure(3);
+clf;
+% left_color = [.1 .1 0];
+% right_color = [0 .5 .5];
+a = [gradient(qall(5,:))',gradient(qall(6,:))',gradient(qall(7,:))',gradient(qall(8,:))']*100;
+p([1:3]) =plot(time, a(:,[1,2,4]),'LineWidth',3);
+ylabel('$\mathbf{Acceleration(\frac{m}{s^2}})$','interpreter','latex')
+hold on
+plot(time,qstardotdot([1,2,4],:),'r--','LineWidth',2);
+
+yyaxis right
+ax = gca;
+ax.YColor = [20 155 20]/256;
+p(4) = plot(time, a(:,3),'color',[20 155 20]/256,'LineWidth',3);
+ylabel('$\mathbf{Acceleration(\frac{degrees}{s^2}})$','interpreter','latex')
+p(5) = plot(time,qstardotdot(3,:),'r--','LineWidth',2);
+hold off
+
+legend(p(1:5),{'Actual $\dot{r_{1}}$','Actual $\dot{r_{2}}$','Actual $\dot{z}$','Actual $\dot{\theta}$','Desired Trajectory'},'interpreter','latex','Location','northeastoutside')
+% legend(p([1:4]),'r1','r 2','z','','des r2','des theta','des z','theta')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',22)
+xlabel('Time (s)')
+xaxis([0 length(time)*T])
+title('Acceleration tracking of desired trajectory')
+
+%%
 figure(3)
 subplot(2,1,1)
 plot(time(1:length(time)-1),u(1:3,:))
-legend('Fr1','Fr2','Ftheta')
+legend('$F_{r_{1}}$','$F_{r_{2}}$','$F_{\theta}$','$F_{z}$','interpreter','latex','Location','northeastoutside')
+
 xlabel('Time (s)')
 xaxis([0 length(time)*T])
 ylabel('Torque (N.m)')
@@ -160,12 +192,14 @@ set(gca,'fontweight','bold','fontsize',22)
 
 subplot(2,1,2)
 plot(time(1:length(time)-1),u(4,:))
-legend('Fz')
+legend('$F_{z}$','interpreter','latex','Location','northeastoutside')
+
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
 xlabel('Time (s)')
 ylabel('Force (N.m)')
 xaxis([0 length(time)*T])
+yaxis(58.5,59)
 sgtitle('Control Forces required to maintain trajectory','fontweight','bold','fontsize',22)
 %%
 figure(4)
@@ -182,9 +216,8 @@ set(gca,'fontweight','bold','fontsize',22)
 xaxis([0 length(time)*T])
 % (-0.08+0.5+r1)/m2;
 %%
+%%
 for i = 1:10:length(time)
-   plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)]);
+   plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)+0.5],i == length(1:10:length(time)));
 end
-set(gcf,'color','w')
-set(gca,'fontweight','bold','fontsize',22)
 % legend('a','b','c','Robot','arm ','bleh ','f')
