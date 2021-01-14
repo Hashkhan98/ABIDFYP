@@ -17,7 +17,7 @@ maxvel = 0.125;
 
 time = t; 
 
-%%Weights for Q and R for each stat     e
+%%Weights for Q and R for each state
 Q = diag([2e5 2e5 1e5 0.1e5 2e3 2e3 1e3 0.1e3]);
 % Q = diag([1 1 1 1 1 1 1 1]);
 R = diag(1);
@@ -216,6 +216,22 @@ set(gca,'fontweight','bold','fontsize',22)
 xaxis([0 length(time)*T])
 % (-0.08+0.5+r1)/m2;
 %%
+%%
+[x,y,z] = pol2cart(qall(3,:),qall(1,:),qall(4,:)+0.5);
+[xstar,ystar,zstar] = pol2cart(qstar(3,:),qstar(1,:),qstar(4,:)+0.5);
+figure(7)
+plot3(xstar,ystar,zstar,'r--','LineWidth',2)
+hold on
+plot3(x,y,z,'b-')
+axis([-1 1 -1 1 0 1]);
+legend('Desired Trajectory','End effector Trajectory','interpreter','latex','Location','northeastoutside')
+xlabel('x (m)')
+ylabel('y (m)')
+zlabel('z (m)')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',22)
+title('Trajectory Tracking of End effector')
+% view(0,90)
 %%
 for i = 1:10:length(time)
    plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)+0.5],i == length(1:10:length(time)));

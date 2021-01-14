@@ -2,25 +2,25 @@ function c = costvel(U,qstar,qstardot,qstardotdot, q0,H,tspan,simstep,simtime)
 
 ctemp = 0; 
 
-Q = diag([2e5 2e5 1e5 0.1e5 2e1 2e1 1e1 0.1e1]);
+Q = diag([2e3 2e3 1e3 0.1e3 2e2 2e2 1e2 0.1e2]);
 
 R = diag([1 1 1 1]);
 
 q1 = repmat(q0(:,1),1,H+1);
 
 for i = 1:H
-    q1(:,i+1)= massmatrix(q1(:,i),U(:,i),tspan);
+    q1(:,i+1)= massmatrix(q1(:,i + (i-1)*10^(i-1)),U(:,i),tspan);
 end
 
-if simstep + H >= length(simtime)
-    qstar = [qstar,repmat(qstar(:,end),1,H)]; 
-    qstardot = [qstardot,repmat(qstardot(:,end),1,H)]; 
+if simstep + H + 9 >= length(simtime)
+    qstar = [qstar,repmat(qstar(:,end),1,H^2)]; 
+    qstardot = [qstardot,repmat(qstardot(:,end),1,H^2)]; 
 end
 
 for i = 1:H
 %    qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
     
-ctemp = ctemp + (([qstar(:,simstep -1 + i);qstardot(:,simstep -1 + i)] - q1(:,i))'*Q*([qstar(:,simstep -1 + i);qstardot(:,simstep -1 + i)] - q1(:,i)))*(i^2);
+ctemp = ctemp + (([qstar(:,simstep -1 + i^2);qstardot(:,simstep -1 + i^2)] - q1(:,i))'*Q*([qstar(:,simstep -1 + i^2);qstardot(:,simstep -1 + i^2)] - q1(:,i)))*(i^6);
 
 end
 c = ctemp;

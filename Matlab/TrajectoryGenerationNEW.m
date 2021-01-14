@@ -94,7 +94,7 @@ qdd = gradient(qd)*100;
 % view(0,90)
 % %%
 % figure(4)
-% plot3(wpts(1,:),wpts(2,:),wpts(3,:),'r.-','MarkerSize',20)
+% plot3(wpts(1,:),wpts(2,:),wpts(3,:)+0.5,'r.-','MarkerSize',20)
 % % axis([-1 1 -1 1 0 1]);    
 % view(0,90)
 % title('University of Newcastle Logo as Featurepoints')
