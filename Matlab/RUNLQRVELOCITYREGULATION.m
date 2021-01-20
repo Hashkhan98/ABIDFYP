@@ -18,7 +18,7 @@ time = 0:T:simtime;
     
 maxvel = 0.125;
 [qstar,qstardot,qstardotdot,t,wpts] = TrajectoryGenerationNEW(maxvel,T); 
-
+    
 time = t;
 %%Weights for Q and R for each state
 Q = diag([2e3 2e3 1e3 0.1e3 2e2 2e2 1e2 0.1e2]);
@@ -254,9 +254,9 @@ set(gca,'fontweight','bold','fontsize',22)
 grid on
 
 %%
-for i = 1:10:length(time)
-   plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)+0.5],i == length(1:10:length(time)));
-end
+% for i = 1:10:length(time)
+%    plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)+0.5],i == length(1:10:length(time)));
+% end
 %% 
 function dx = LQR(~,q,K,qstar,qstardot,qstardotdot,i)
 
@@ -287,7 +287,7 @@ gx = [0;0;0;0;(param.U(1) + m1*q(1)*q(7)^2)/m1;...
       (param.U(3)  - (2*m1*q(1)*q(5)*q(7) + 2*m2*q(2)*q(6)*q(7)))/(m1*q(1)^2 + m2*q(2)^2 + Ib);...
       (param.U(4))/(m1+m2+mbh) - g];
 dx = fx + gx;
-
+% param.Uplot(:,i) = gx(5:8);
 end
 
 

@@ -1,43 +1,19 @@
-function c = costvel(U,qstar,qstardot,qstardotdot, q0,H,tspan,simstep,simtime)
+function ctemp = costvel(U,qstar, q0,H,tspan,simstep)
 
-ctemp = 0; 
+ctemp = 0; %Initialise nil cost
 
-Q = diag([2e3 2e3 1e3 0.1e3 2e2 2e2 1e2 0.1e2]);
+Q = diag([2e5 2e5 1e5 1e5 2e1 2e1 1e1 1e1]);    %State Weights matrix
+R = diag([1 1 100 0.001])*0.001;                                %Control-input Weights matrix
 
-R = diag([1 1 1 1]);
-
-q1 = repmat(q0(:,1),1,H+1);
-
+tic
+% q = repmat(q0(:,1),1,H+1);        %Pre-allocate size for faster execution
+q = [q0,qo,qo,
+toc
 for i = 1:H
-    q1(:,i+1)= massmatrix(q1(:,i + (i-1)*10^(i-1)),U(:,i),tspan);
-end
 
-if simstep + H + 9 >= length(simtime)
-    qstar = [qstar,repmat(qstar(:,end),1,H^2)]; 
-    qstardot = [qstardot,repmat(qstardot(:,end),1,H^2)]; 
-end
-
-for i = 1:H
-%    qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
-    
-ctemp = ctemp + (([qstar(:,simstep -1 + i^2);qstardot(:,simstep -1 + i^2)] - q1(:,i))'*Q*([qstar(:,simstep -1 + i^2);qstardot(:,simstep -1 + i^2)] - q1(:,i)))*(i^6);
+    q(:,i+1)= massmatrix(q(:,i),U(:,i),tspan);      %Compute dx = fx + gu based on current x and u over horizon H 
+    ctemp = ctemp + ((qstar(:,simstep -1 + i) - q(:,i))'*Q*(qstar(:,simstep -1 + i) - q(:,i))) + U(:,i)'*R*U(:,i);
 
 end
-c = ctemp;
+
 end
-% 
-% for i = 1:H
-%     
-%     q1(:,i+1)= massmatrix(q1(:,i),U(:,i),tspan);
-%     q1dot = gradient(q1);
-%     
-% %    qall(:,i)=massmatrix(qall(:,i-1),u(:,i-1),tspan)';
-%     
-%     ctemp = ctemp + (1/2)*(q1(:,i) - [qstar(:,i);qstardot(:,i)])'*Q*(q1(:,i) - [qstar(:,i);qstardot(:,i)])*(i^2); ...
-% %             + (1/2)*([qstardot(:,i);qstardotdot(:,i)] - q1dot(:,i))'*Q*([qstardot(:,i);qstardotdot(:,i)] - q1dot(:,i))*(i^8); 
-% %             + 1/2*(U(:,i)'*R*U(:,i));
-% end
-% 
-% c = ctemp;
-% 
-% end
