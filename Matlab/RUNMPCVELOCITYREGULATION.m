@@ -17,13 +17,8 @@ maxvel = 0.125;
 
 time = t; 
 
-%%Weights for Q and R for each state
-Q = diag([2e5 2e5 1e5 0.1e5 2e3 2e3 1e3 0.1e3]);
-% Q = diag([1 1 1 1 1 1 1 1]);
-R = diag(1);
-
 q0 = [qstar(:,1);qstardot(:,1)];
-u0 = [0 0 0 0]';
+u0 = [0 0 0 58.8600]';
 
 % qgoal = [0.3,0.3*m1/m2,90*pi/180,0.4 ,0,0,0,0]';
 % q = [r1 r2 theta z]
@@ -49,27 +44,37 @@ U = [F1,F2,Tau,Fz]';
 
 % q = [r1 r2 theta z dr1 dr2 dtheta dz]
 %%Mass Matrix
-M = diag([m1 m2  m1*r1^2+m2*r2^2+Ib m1+m2+mbh]); 
+% M = diag([m1 m2  m1*r1^2+m2*r2^2+Ib m1+m2+mbh]); 
+% 
+% %%Coriolis Matrix
+% C = [0 0 -m1*r1*w 0;
+%        0 0 -m2*r2*w 0;
+%        2*m1*r1*w   2*m2*r2*w 0 0;
+%        0 0 0 0];
+% %%Gravity Matrix
+% G = [0;0;0;g*(m1+m2+mbh)];
+% 
+% global param
+% param.M = M;
+% param.C = C;
+% param.G = G;
+% param.U = U;
+% 
+% param.A = [zeros(4) , eye(4) ; zeros(4,8)];
+% 
+% param.B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
+% 
+% % param.C = [1 1 1 1 1 1 1 1];
+% 
+% param.C =  [1, 0, 0, 0, 0, 0, 0, 0,; %%r1
+%             0, 1, 0, 0, 0, 0, 0, 0,;%%r2
+%             0, 0, 1, 0, 0, 0, 0, 0,;%%theta
+%             0, 0, 0, 1, 0, 0, 0, 0,]; %%z
+        
+% rank(ctrb(param.A,param.B)) 
+% rank(obsv(param.A,param.C))                            
 
-%%Coriolis Matrix
-C = [0 0 -m1*r1*w 0;
-       0 0 -m2*r2*w 0;
-       2*m1*r1*w   2*m2*r2*w 0 0;
-       0 0 0 0];
-%%Gravity Matrix
-G = [0;0;0;g*(m1+m2+mbh)];
-
-global param
-param.M = M;
-param.C = C;
-param.G = G;
-param.U = U;
-
-param.A = [zeros(4) , eye(4) ; zeros(4,8)];
-
-param.B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
-
-[K,P,E]=lqr(param.A,param.B,Q,R);  %k=full state feedback gain.....P= solution to algebric ricaati equation....E= Eigrn values
+% [K,P,E]=lqr(param.A,param.B,Q,R);  %k=full state feedback gain.....P= solution to algebric ricaati equation....E= Eigrn values
 
 %feedforward gain, may or may not be used
 % C = [1,1,1,1,0,0,0,0];
@@ -79,16 +84,38 @@ param.B = [zeros(4,4); diag([1/m1 ; 1/m2 ; 1 ; 1])];
 %%
 H = 3;
 
+%%pad trajectory
+qstar = [qstar,repmat(qstar(:,end),1,H)]; 
+qstardot = [qstardot,repmat(qstardot(:,end),1,H)]; 
+
 u = zeros(4,H);
-u(:,1) = [F1,F2,Tau,Fz]';
+u(:,1) = [0 0 0 58.8600]';
 qall = zeros(8,H);
 qall(:,1) = q0;
 
+%%
+QMPC = diag([2e5 2e5 1e5 1e5 2e1 2e1 1e1 1e1]);    %State Weights matrix
+RMPC = diag([1 1 1 0.001])*0.01;                     %Control-input Weights matrix
+A = [];
+b = [];
+Aeq = [];
+beq = [];
+lb = [-2 ,-3 , -5, -10 + 58]';
+ub = [2 ,3 ,5 ,10 + 58]';
+lbmat = repmat(lb,1,H);
+ubmat=repmat(ub,1,H);
+nonlin = [];
+options = optimoptions('fmincon','Display','off','Algorithm','sqp','MaxFunEvals',3000);
+U0 = repmat(u(:,1),1,H);
+%%
 %% sim
 tic
 for i = 1:length(time)-1
 
-u(:,i) = controllervel(qall(:, i), qstar,qstardot,qstardotdot, H,simstep,0,i,time);
+% U0 = fmincon(@(U) costvel(U,qstar,qstardot,[],qall(:, i),H,simstep,i,[]) ,U0,A,b,Aeq,beq,lbmat,ubmat,nonlin,options);
+U0 = fmincon(@(U) costvel(U,[qstar;qstardot],[qall(:, i),qall(:, i),qall(:, i),qall(:, i)],H,simstep,i,QMPC,RMPC) ,U0,A,b,Aeq,beq,lbmat,ubmat,nonlin,options);
+
+u(:,i) = U0(:,1);
 
 qall(:,i+1)= massmatrix(qall(:,i),u(:,i),simstep)';
 end
@@ -102,14 +129,14 @@ fig = figure(1);
 p([1:3]) =plot(time, qall([1,2,4],:),'LineWidth',3);
 ylabel('$\mathbf{Position(m)}$','interpreter','latex')
 hold on
-plot(time,qstar([1,2,4],:),'r--','LineWidth',2);
+plot(time,qstar([1,2,4],1:length(time)),'r--','LineWidth',2);
 
 yyaxis right
 ax = gca;
 ax.YColor = [20 155 20]/256;
 p(4) = plot(time, qall(3,:)*180/pi,'color',[20 155 20]/256,'LineWidth',3);
 ylabel('$\mathbf{Position(degrees)}$','interpreter','latex')
-p(5) = plot(time,qstar(3,:)*180/pi,'r--','LineWidth',2);
+p(5) = plot(time,qstar(3,1:length(time))*180/pi,'r--','LineWidth',2);
 hold off
 
 legend(p(1:5),{'Actual $r_{1}$','Actual $r_{2}$','Actual $z$','Actual $\theta$','Desired Trajectory'},'interpreter','latex','Location','northeastoutside')
@@ -122,7 +149,7 @@ title('Position tracking of desired trajectory')
 
 %%
 
-RMSE = sqrt(mean((qall(1,:)' - qstar(1,:)').^2))
+RMSE = sqrt(mean((qall(1,:)' - qstar(1,1:length(time))').^2))
 % plot(time,RMSE)
 %%
 fig = figure(2);
@@ -133,14 +160,14 @@ clf;
 p([1:3]) =plot(time, qall([5,6,8],:),'LineWidth',3);
 ylabel('$\mathbf{Velocity(\frac{m}{s}}$)','interpreter','latex')
 hold on
-plot(time,qstardot([1,2,4],:),'r--','LineWidth',2);
+plot(time,qstardot([1,2,4],1:length(time)),'r--','LineWidth',2);
 
 yyaxis right
 ax = gca;
 ax.YColor = [20 155 20]/256;
 p(4) = plot(time, qall(7,:),'color',[20 155 20]/256,'LineWidth',3);
 ylabel('$\mathbf{Velocity(\frac{rad}{s}}$)','interpreter','latex')
-p(5) = plot(time,qstardot(3,:),'r--','LineWidth',2);
+p(5) = plot(time,qstardot(3,1:length(time)),'r--','LineWidth',2);
 hold off
 
 legend(p(1:5),{'Actual $\dot{r_{1}}$','Actual $\dot{r_{2}}$','Actual $\dot{z}$','Actual $\dot{\theta}$','Desired Trajectory'},'interpreter','latex','Location','northeastoutside')
@@ -160,14 +187,14 @@ a = [gradient(qall(5,:))',gradient(qall(6,:))',gradient(qall(7,:))',gradient(qal
 p([1:3]) =plot(time, a(:,[1,2,4]),'LineWidth',3);
 ylabel('$\mathbf{Acceleration(\frac{m}{s^2}})$','interpreter','latex')
 hold on
-plot(time,qstardotdot([1,2,4],:),'r--','LineWidth',2);
+plot(time,qstardotdot([1,2,4],1:length(time)),'r--','LineWidth',2);
 
 yyaxis right
 ax = gca;
 ax.YColor = [20 155 20]/256;
 p(4) = plot(time, a(:,3),'color',[20 155 20]/256,'LineWidth',3);
 ylabel('$\mathbf{Acceleration(\frac{degrees}{s^2}})$','interpreter','latex')
-p(5) = plot(time,qstardotdot(3,:),'r--','LineWidth',2);
+p(5) = plot(time,qstardotdot(3,1:length(time)),'r--','LineWidth',2);
 hold off
 
 legend(p(1:5),{'Actual $\dot{r_{1}}$','Actual $\dot{r_{2}}$','Actual $\dot{z}$','Actual $\dot{\theta}$','Desired Trajectory'},'interpreter','latex','Location','northeastoutside')
@@ -199,7 +226,7 @@ set(gca,'fontweight','bold','fontsize',22)
 xlabel('Time (s)')
 ylabel('Force (N.m)')
 xaxis([0 length(time)*T])
-yaxis(58.5,59)
+yaxis(48,68)
 sgtitle('Control Forces required to maintain trajectory','fontweight','bold','fontsize',22)
 %%
 figure(4)
@@ -217,8 +244,8 @@ xaxis([0 length(time)*T])
 % (-0.08+0.5+r1)/m2;
 %%
 %%
-[x,y,z] = pol2cart(qall(3,:),qall(1,:),qall(4,:)+0.5);
-[xstar,ystar,zstar] = pol2cart(qstar(3,:),qstar(1,:),qstar(4,:)+0.5);
+[x,y,z] = pol2cart(qall(3,:),qall(1,:),qall(4,:));
+[xstar,ystar,zstar] = pol2cart(qstar(3,:),qstar(1,:),qstar(4,:));
 figure(7)
 plot3(xstar,ystar,zstar,'r--','LineWidth',2)
 hold on
@@ -233,7 +260,7 @@ set(gca,'fontweight','bold','fontsize',22)
 title('Trajectory Tracking of End effector')
 % view(0,90)
 %%
-for i = 1:10:length(time)
-   plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)+0.5],i == length(1:10:length(time)));
-end
+% for i = 1:10:length(time)
+%    plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)+0.5],i == length(1:10:length(time)));
+% end
 % legend('a','b','c','Robot','arm ','bleh ','f')

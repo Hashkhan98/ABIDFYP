@@ -2,8 +2,7 @@
 
 %% Constants
 
-global m1 m2 mbh mbv bvr g lb Ib M C G
-
+% global m1 m2 mbh mbv bvr g lb Ib M C G
 m1 = 1;         %% Mass of the load 
 m2 = 3.6;       %% Mass of the counterweight
 mbh = 1.4;      %% Mass of the horizontal Beam
