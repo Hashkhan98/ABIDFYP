@@ -206,28 +206,50 @@ xaxis([0 length(time)*T])
 title('Acceleration tracking of desired trajectory')
 
 %%
-figure(3)
-subplot(2,1,1)
-plot(time(1:length(time)-1),u(1:3,:))
-legend('$F_{r_{1}}$','$F_{r_{2}}$','$F_{\theta}$','$F_{z}$','interpreter','latex','Location','northeastoutside')
+figure(4)
+subplot(2,2,1)
+plot(time(1:end-1),u(1,:))
+
+
+xlabel('Time (s)')
+xaxis([0 length(time)*T])
+ylabel('Force (N)')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',22)
+title('$F_{r1}$','interpreter','latex')
+
+subplot(2,2,2)
+plot(time(1:end-1),u(2,:))
+
+
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',22)
+xlabel('Time (s)')
+ylabel('Force (N)')
+title('$F_{r2}$','interpreter','latex')
+xaxis([0 length(time)*T])
+sgtitle('Control Forces required to maintain trajectory','fontweight','bold','fontsize',22)
+
+subplot(2,2,3)
+plot(time(1:end-1),u(3,:))
+
 
 xlabel('Time (s)')
 xaxis([0 length(time)*T])
 ylabel('Torque (N.m)')
+title('$F_{\theta}$','interpreter','latex')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
 
-subplot(2,1,2)
-plot(time(1:length(time)-1),u(4,:))
-legend('$F_{z}$','interpreter','latex','Location','northeastoutside')
+subplot(2,2,4)
+plot(time(1:end-1),param.Uplot(4,:))
 
-set(gcf,'color','w')
-set(gca,'fontweight','bold','fontsize',22)
 xlabel('Time (s)')
-ylabel('Force (N.m)')
 xaxis([0 length(time)*T])
-yaxis(48,68)
-sgtitle('Control Forces required to maintain trajectory','fontweight','bold','fontsize',22)
+ylabel('Force (N)')
+title('$F_z$','interpreter','latex')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',22)
 %%
 figure(4)
 plot(time,qall(1,:)*m1,'k--',time,-qall(2,:)*m2,'b--',time,repmat(0.42,1,length(time)),'c')
@@ -250,7 +272,7 @@ figure(7)
 plot3(xstar,ystar,zstar,'r--','LineWidth',2)
 hold on
 plot3(x,y,z,'b-')
-axis([-1 1 -1 1 0 1]);
+axis([-0.2 0.7 -0.5 0.4 0.4 0.8]);
 legend('Desired Trajectory','End effector Trajectory','interpreter','latex','Location','northeastoutside')
 xlabel('x (m)')
 ylabel('y (m)')
@@ -258,7 +280,7 @@ zlabel('z (m)')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
 title('Trajectory Tracking of End effector')
-% view(0,90)
+view(-30,60)
 %%
 % for i = 1:10:length(time)
 %    plotRobot([qall(1,i),qall(2,i),qall(3,i),qall(4,i)+0.5],i == length(1:10:length(time)));

@@ -97,8 +97,6 @@ toc
 %% plotting
 clf;
 fig = figure(1);
-% left_color = [.1 .1 0];
-% right_color = [0 .5 .5];
 
 p([1:3]) =plot(time, qall([1,2,4],:),'LineWidth',3);
 ylabel('$\mathbf{Position(m)}$','interpreter','latex')
@@ -113,7 +111,7 @@ ylabel('$\mathbf{Position(rad)}$','interpreter','latex')
 p(5) = plot(time,qstar(3,:),'r--','LineWidth',2);
 hold off
 
-legend(p(1:5),{'Actual $r_{1}$','Actual $r_{2}$','Actual $\theta$','Actual $z$','Desired Trajectory'},'interpreter','latex','Location','northeastoutside')
+legend(p(1:5),{'Actual $r_{1}$','Actual $r_{2}$','Actual $z$','Actual $\theta$','Desired Trajectory'},'interpreter','latex','Location','northeastoutside')
 % legend(p([1:4]),'r1','r 2','z','','des r2','des theta','des z','theta')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
@@ -177,27 +175,50 @@ title('Acceleration tracking of desired trajectory')
 
 %%
 figure(4)
-subplot(2,1,1)
-plot(time(1:end-1),param.Uplot(1:3,:))
-legend('$F_{r_{1}}$','$F_{r_{2}}$','$F_{\theta}$','interpreter','latex','Location','northeastoutside')
+subplot(2,2,1)
+plot(time(1:end-1),param.Uplot(1,:))
+
+
+xlabel('Time (s)')
+xaxis([0 length(time)*T])
+ylabel('Force (N)')
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',22)
+title('$F_{r1}$','interpreter','latex')
+
+subplot(2,2,2)
+plot(time(1:end-1),param.Uplot(2,:))
+
+
+set(gcf,'color','w')
+set(gca,'fontweight','bold','fontsize',22)
+xlabel('Time (s)')
+ylabel('Force (N)')
+title('$F_{r2}$','interpreter','latex')
+xaxis([0 length(time)*T])
+sgtitle('Control Forces required to maintain trajectory','fontweight','bold','fontsize',22)
+
+subplot(2,2,3)
+plot(time(1:end-1),param.Uplot(3,:))
+
 
 xlabel('Time (s)')
 xaxis([0 length(time)*T])
 ylabel('Torque (N.m)')
+title('$F_{\theta}$','interpreter','latex')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
 
-subplot(2,1,2)
+subplot(2,2,4)
 plot(time(1:end-1),param.Uplot(4,:))
-legend('$F_{z}$','interpreter','latex','Location','northeastoutside')
 
+xlabel('Time (s)')
+xaxis([0 length(time)*T])
+ylabel('Force (N)')
+title('$F_z$','interpreter','latex')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
-xlabel('Time (s)')
-ylabel('Force (N.m)')
-xaxis([0 length(time)*T])
-yaxis(58.5,59)
-sgtitle('Control Forces required to maintain trajectory','fontweight','bold','fontsize',22)
+
 %%
 figure(5)
 plot(time,qall(1,:)*m1,'r--',time,-qall(2,:)*m2,'b--',time,repmat(0.42,1,length(time)),'c')
@@ -211,22 +232,26 @@ xlabel('Time (s)')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
 xaxis([0 length(time)*T])
+
 %%
 [x,y,z] = pol2cart(qall(3,:),qall(1,:),qall(4,:)+0.5);
 [xstar,ystar,zstar] = pol2cart(qstar(3,:),qstar(1,:),qstar(4,:)+0.5);
 figure(7)
+clf
+subplot(2,2,1)
 plot3(xstar,ystar,zstar,'r--','LineWidth',2)
 hold on
 plot3(x,y,z,'b-')
-axis([-1 1 -1 1 0 1]);
-legend('Desired Trajectory','End effector Trajectory','interpreter','latex','Location','northeastoutside')
+axis([-0.2 0.7 -0.5 0.4 0.5 1.5]);
+
 xlabel('x (m)')
 ylabel('y (m)')
 zlabel('z (m)')
 set(gcf,'color','w')
 set(gca,'fontweight','bold','fontsize',22)
 title('Trajectory Tracking of End effector')
-% view(0,90)
+view(90,90,90)
+
 
 %%
 % clf;
