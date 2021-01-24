@@ -26,7 +26,7 @@ qd = gradient(q)*100;
  
 qdd = gradient(qd)*100;
 
- %%
+%  %
 % figure(1)
 % 
 % subplot(3,1,1)

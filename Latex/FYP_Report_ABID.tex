@@ -1,0 +1,2018 @@
+\documentclass{UoNMCHA}
+\usepackage[numbers]{natbib}
+\usepackage{array,booktabs} % For nice tables
+\usepackage{amsmath,amsfonts,amssymb} % For nice maths
+\usepackage{color,mathtools}
+\usepackage{enumerate,tensor}
+\usepackage{listings}
+\usepackage{subfig}
+\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[mathscr]{euscript}
+\usepackage[parfill]{parskip}   % For replacing paragraph indenting with a newline instead
+\usepackage{enumitem}
+\usepackage[tableposition=top]{caption}
+
+% Number equations per section
+\numberwithin{equation}{section}
+
+\hypersetup{
+	%    bookmarks=true,         % show bookmarks bar?
+	%    unicode=false,          % non-Latin characters in AcrobatÕs bookmarks
+	%    pdftoolbar=true,        % show AcrobatÕs toolbar?
+	%    pdfmenubar=true,        % show AcrobatÕs menu?
+	%    pdffitwindow=false,     % window fit to page when opened
+	%    pdfstartview={FitH},    % fits the width of the page to the window
+	%    pdftitle={My title},    % title
+	%    pdfauthor={Author},     % author
+	%    pdfsubject={Subject},   % subject of the document
+	%    pdfcreator={Creator},   % creator of the document
+	%    pdfproducer={Producer}, % producer of the document
+	%    pdfkeywords={keyword1} {key2} {key3}, % list of keywords
+	%    pdfnewwindow=true,      % links in new window
+	colorlinks=true,       % false: boxed links; true: colored links
+	linkcolor=blue,          % color of internal links
+	citecolor=blue,        % color of links to bibliography
+	%    filecolor=magenta,      % color of file links
+	urlcolor=blue           % color of external links
+}
+
+\definecolor{MATLABKeyword}{rgb}{0,0,1}
+\definecolor{MATLABComment}{rgb}{0.1328125,0.54296875,0.1328125}
+\definecolor{MATLABString}{rgb}{0.625,0.125,0.9375}
+
+\lstset{language=Matlab,
+	basicstyle=\small\ttfamily,
+	keywordstyle=\color{MATLABKeyword},
+	%identifierstyle=,
+	commentstyle=\color{MATLABComment},
+	stringstyle=\color{MATLABString},
+	numberstyle=\tiny,
+	%numbers=left,
+	basewidth=0.5em}
+
+\firstpage{1}    % Set page number for first page
+\UoNMCHAreportNo{Final Year Project} %Report number
+\UoNMCHAyear{2020}   % Year\\
+\shorttitle{Beam type 3D Printer} %For odd pages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+	\title{Beam type 3D Printer \\ \ \\
+		{\small MECH4841 Final Year Project Report  \\December 2020}}
+	\author[UoNMCHA]{Abid Khan}
+	\address[UoNMCHA]{
+		Student of Mechatronics Engineering,\\
+		The University of Newcastle, Callaghan, NSW 2308, AUSTRALIA \\
+		Student Number: 3189548 \\
+		E-mail: \href{mailto: c3189548@uon.edu.au}{\textsf{ c3189548@uon.edu.au}}}
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\maketitle
+	\onecolumn
+	
+	\newpage
+	\vspace{-5mm}
+	\section*{Abstract}
+	
+	This report presents the design aspect of a tower crane-based 3D printer consisting of one rotational and three prismatic joints. It describes the energy-based mathematical modelling of the dynamics of a fully-actuated system using Euler-Lagrange equations of
+	motions. It also covers the forward inverse kinematics for the project along with two control designs: linear quadratic regulator and model predictive control. It includes a way for generating a trajectory with constraints and slew rate limits. The report compares the results produced by the simulations of the two control designs.
+	Future work for this project would be the implementation all the control actions on the hardware and a comparison with the traditional gantry-based 3D printer hardware.
+
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\newpage
+	\vspace{-5mm}
+	\section*{Dot Point Summary}
+	%\vspace{mm}
+	
+	\begin{itemize}
+		\item Applied euler lagrangian modeling methods to simulate a beam type 3D printer.
+		\item Applied forward and inverse kinematics.
+		\item Applied trajectory generation techniques to create a trajectory from waypoints
+		\item Applied linear quadratic regulator on the model in simulation.
+		\item Applied non-linear model predictive controller on the model in simulation.
+		\item Comparison between the two controllers designed.
+		
+		
+		
+	\end{itemize}
+	%%%%%%%%%%%%%%
+	\newpage
+	\vspace{-2mm}
+	\section*{Acknowledgements}
+	
+	Dr Alejandro Donaire has provided significant amount of help and support with this project. He is also the supervisor for this project. I'd also like to thank my family and friends for providing the support and stability I needed for the successful completion of this report. Some of those people are listed below.
+	\begin{itemize}
+		\item Dr Bill McBride for his faith.
+		\item Patrick Harper for his help.
+		\item Muhammad Hasham for his help.
+		\item Paul Hughes for his help.
+		
+	\end{itemize}
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\newpage
+	\tableofcontents
+	
+	\newpage
+	
+	\listoffigures
+	
+	\newpage
+	
+	\listoftables
+	
+	\newpage
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	\part*{Chapter 1} 
+
+
+	\addcontentsline{toc}{section}{Chapter 1}
+	\section{Introduction}
+	
+The project aims to design and simulate a 3D printer for house construction. It is focused on the modelling, analysis, simulation, control and evaluation of a rotational machine with prismatic arm, the 3D printer, that moves in its workspace where the walls of the house are to be printed. An active counterweight balancing system is attached to the printer to increase the precision, stability and speed of the machine. This report will compare different controllers to find the preferred solution for the project.
+	
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+	\subsection{Automation for Precision Manufacturing}\label{Automation for Precision manufacturing}
+	
+	In the modern days, manufacturers are pushing for tighter tolerances faster turnarounds and cheaper components. This has led to the use of advanced automation in widespread applications in an increasing number of industries. This not only increases parts repeatability in micro or ultra-precision machining processes, but this also significantly reduces the labour required to produce a part. This in turn results in a per piece cost reduction, especially in higher volume applications. This also insulates the customer against future price volatility due to the labour market. Some standard implementations of control theory in this context are Automated lathes, CNC machines and 3D printing devices. \par
+	It is control theory that allows controlling of dynamical systems in various engineered processes using machines. The objective is to make a control system that enables us to precisely coordinate control actions that optimises tool pathing, reduce delay, overshoot, and ensure control stability. The controller that works by minimising the difference between the desired value and the actual value is called error which is applied as feedback to initiate a control action which works intuitively to reduce the value between desired and actual value. \\
+	Control theory allows us to achieve repeatability even when faced with a non-linear or highly complex system. 
+	
+	\subsection{Additive Manufacturing}\label{Additive Manufacturing}
+	
+	Recent advancements in composite materials like concrete have included the development of additives which allow the concrete to set in minutes compared to the days required for the current standard.\par
+	
+	This will reduce the cost of the construction significantly and deliver the houses faster, in order to achieve this, a control system for a beam type 3D printer is required to be made.
+	
+	
+	Additive manufacturing (AM), also known as Additive Layer Manufacturing (ALM), is commonly used in industries for 3D printing. In general, it is a process controlled by the computer by depositing the material usually in layers. 
+	
+	\newpage
+	A number of various AM processes include Binding Jetting, Direct Energy Deposition, Material Extrusion, Powder Bed Fusion, Sheet Lamination, Vat Polymerization and Wire Arc Additive Manufacturing. Figure \ref{figs/ali Express} below shows an example of Additive manufacturing.\\
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.75\linewidth]{figs/ali Express}
+			\caption{3D printer making an engine block \cite{a2019_3d}}
+			\label{figs/ali Express}
+		\end{center}
+	\end{figure}
+	
+	Hideo Kodama of Nagoya Municipal Industrial Research Institute was the earliest to invent 3D printing manufacturing equipment; he invented two additive methods for fabricating 3D models. Many materials are currently used such as biochemicals, ceramics metals, thermoplastics and specialised concrete. AM is used across a growing number of industries creating a wide range of products; some of these industries include aerospace, automotive, construction and medical. \par
+	AM was initially considered to be only used for rapid prototyping however the increase in precision and repeatability has led it to be used in everyday manufacturing This is due to cheaper material availability and more generous support and machines availability in the market. There are significant advantages that can be achieved from this process which includes printing hollow and intricate structures. \par
+	
+	This project aims to design an AM machine that could print houses, which would lower the environmental footprint by reducing the material used for construction while also providing cheaper housing solutions. By minimising the use of the material as these structures can be printed hollow, it will also benefit people living in areas where wood and other raw materials are scarce. Since this is a relatively new process, there are ways it can be improved. One issue is the transportation of the machine as the
+	structure could be bulky and hard to assemble. This issue could be resolved using a beam type 3D printer and a counterbalancing mechanism for increased stability. Unlike traditional construction techniques, complex structures could be made as the machines can achieve better repeatability and precision than humans.\par
+	This issue could be resolved using a beam type 3D printer and a counterbalancing mechanism for increased stability. Unlike traditional construction techniques, complex structures could be made as the machines can achieve better repeatability and precision than humans. \par
+	
+	\newpage
+	\section{Problem Formulation}\label{Problem Formulation}
+		
+	\subsection{Current Standard – Full Frame Design}
+	Typically, 3D printers use a gantry-based design which operates by controlling a printer head to follow a precomputed path and extruding a filament of material upon a work-surface for multiple layers to create a desired object. This filament is extruded through a nozzle, whose movement is precisely controlled by a computer which operates motors that slide the nozzle along the X gantry, the X gantry across the Y gantry and both
+	gantries up and down the Z gantry. An example of this printer is shown in figure \ref{figs/Picture1} below.
+
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.6\linewidth]{figs/Picture1}
+			\caption{A  common 3 axis cartesian FDM 3D printer commonly consisting of 3 actuators \cite{medlicott_blog}}
+			\label{figs/Picture1}
+		\end{center}
+	\end{figure}
+	
+This framework has been applied by Fused Deposition Modelling (FDM) 3D printers and has shown promising results. However, the method has some limitations:\\
+	
+	\begin{itemize}
+		\item The size of the gantry system required increases dramatically with the size of the building and is impractical for larger buildings; it encompasses every construction and must be larger than it.
+		\item The construction industry is a very conservative market that is slow to change. It would be more acceptable to use a system that is tried and tested in this environment.
+		\item The bulky structure requires disassembly and reassembly when it is transported to new construction sites.
+	\end{itemize}
+	
+The proposed design using tower cranes to carry out the 3-D printing addresses these issues.
+	
+	\subsection{Use of Tower Crane Design}
+	
+	
+	Tower cranes have been in use for over a century \cite{wolff}. They have proven to provide a versatile method for transporting and handling heavy materials across the building and its working space. This led to the idea that these cranes could be utilised for the 3D printing of houses; their robust nature and ease of setup and transportation compare favourably to the traditional gantry type 3D printers. Figure \ref{figs/Picture37} provides an illustration of 3D printing using this old and robust concept.\\
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.75\linewidth]{figs/Picture37}
+			\caption{Apis Cor's 3D Printer shown printing walls for a house retrieved from \cite{beach_new}}
+			\label{figs/Picture37}
+		\end{center}
+	\end{figure}
+	
+	Some 3D printers employing tower cranes have already been designed and built with promising results. However, the movement of the mass of the printer head along the crane arm has led to some instability requiring the support to be made stronger and heavier and the rates of travel to be limited to lower than ideal speeds. \par
+	
+	This problem might be solved by creating a counterbalancing system that stabilises the
+	structure by keeping the centre of gravity close to the beam’s centre. This would also help provide better precision as the system moves, thus resulting in more accurate deposition of the building material and repeatability of design construction.
+	
+	
+	\newpage
+	\subsection{In-Scope} \label{In-scope}
+	
+	\begin{itemize}
+		\item Modelling Tower Crane using Lagrangian Mechanics.
+		\item Optimum control using LQR with feedback linearisation.
+		\item  Non-linear Model Predictive Control.
+	\end{itemize}
+	
+	\subsection{Out-of-Scope} \label{Out-of-scope}
+	
+	\begin{itemize}
+		\item Friction and damping were not considered.
+		\item Beam's elasticity is not considered.
+		\item Assumed perfect encoders and thus perfect state estimation – no observer or state estimation considered.
+		
+	\end{itemize}
+	
+	
+	\subsection{Safety Considerations} \label{Safety Considerations}
+	
+	A tower crane design with a fixed counterweight would require a heavier and strong base as it is operating. With increased rotational velocity and centre of mass away from the rotation's origin, the tower crane design can destabilise and collapse, causing devastating results. This raises the question of the need for smart control algorithms for moment balancing.
+	
+	
+	\section{Dynamic Systems}\label{Dynamic Systems}
+	
+	Before proceeding, it is important to know what dynamic systems are. A system whose current state produces its following state by a certain principle of change and thus produces a trajectory in state space is called a dynamic system. Consider a system where the derivative of the states is a function of the states only:
+	
+	\begin{equation} \label{state equation}
+	\dot{x} = f(x)
+	\end{equation} 
+	
+	Equation \ref{state equation} represents an autonomous dynamic system as the next state is a function of the current state. Successive application of this expression generates a sequence \cite{hasankhalil_2002_solutions}: 
+	
+	\begin{equation} \label{arrows equation}
+\dot{y}=\dot{x}=f(x)=f(y+\bar{x}) \stackrel{\text { def }}{=} g(y), \quad \text { where } g(0)=0
+	\end{equation} \\
+	
+	This sequence can be as long or short as one wishes but an important form of change in the system is the zero change where the rate of change in the states becomes zero i.e., stability, where the dynamics actively recreate the preceding state into current state. This means that for a certain equilibrium point $x_{c}= 0$, the function $f(x_{c})=0$. The equilibrium point can be stable or unstable, the criterion for it is explained below \cite{hasankhalil_2002_solutions}. \\
+	
+	\newpage
+	The equilibrium point of the system is: \\
+	
+	\begin{itemize}
+		\item 	Stable if, for each $\epsilon>0$ there is a $\delta=\delta (\epsilon)>0$ such that,
+		\begin{equation*}
+		\left|\left|x\left(0\right)\right|\right|<\delta\rightarrow x(t)<\epsilon,\forall t>0  
+		\end{equation*}
+		\item Unstable if it is not stable.
+		\item Asymptotically stable if it is stable and $\delta$ can be chosen such that,
+		\begin{equation*}
+		\left|\left|x\left(0\right)\right|\right|<\delta=>\lim_{t\to \infty}{x(t)=0}
+		\end{equation*}
+		
+	\end{itemize}
+		
+	
+	\section{Linear and Non-Linear Systems}\label{Linear and Non-Linear Systems}
+	
+	The most general form of a dynamic system of n state variables is usually defined by an equation expressing the time derivative of the state variables as a function of time, t, the state variables, $x_1\mathrm{,\ }x_2, …, x_n$ and input variables $u_1\mathrm{,\ }u_2, …, u_m$. With $x=\left[x_1\mathrm{\ } x_2\mathrm{\ } \ldots\mathrm{\ } x_n\right]^\mathrm{T}$, $u=\left[u_1\mathrm{\ } u_2\mathrm{\ } \ldots\mathrm{\ } u_m\right]^\mathrm{T}$, it may be written. 
+	
+	\begin{equation}
+	\mathbf{\dot{x}=f(t,x,u)}
+	\end{equation}
+	
+	Many systems do not have input variables, or they may be written as functions of the time and state variables. One class of such functions are linear systems which have the form:
+	
+	\begin{equation}
+	\mathbf{\dot{x}=Ax}
+	\end{equation}
+	
+	where $A=\left[a_{ij}(t)\right]$ is an $n\times n$ matrix of time dependent functions. Solutions to such a system have the property that any linear combination of solutions is itself a solution. They form a vector space, the state space. The constant vector function $x_0=0$ is always a member of the state space. It has the property that ${\dot{x}}_0=0$ and is an equilibrium state of the system.
+
+	When each of the $a_{ij}$ are constant, the general solution to the system usually has the form: 
+	
+	\begin{equation}
+	\mathbf{\dot{x}=Be}
+	\end{equation}
+	
+	Here $\mathbf{e}$ is a vector, $\left[e_1\mathrm{(t)\ } e_2\mathrm{(t)\ } \ldots\mathrm{\ } e_n\mathrm{(t)} \right]^\mathrm{T}$, of time dependent functions where  $e_i\left(t\right)=e^{\lambda_it}$ and $\mathbf{B}$ an $n\times n$ matrix of constants. The $\lambda_i$ are the eigen values of $\mathbf{A}$ which may be complex. The real part gives rise to an exponential function, the complex part is associated with a sinusoidal function.  Any state is a linear combination of some, not necessarily all, of the functions in\ $\mathbf{e}$.
+	
+	\newpage
+	
+	The behaviour of a state over time depends on the sign of the real parts of the eigenvalues contributing to the state:
+	
+	\begin{itemize}
+		\item	If any sign is positive, the size of the state grows exponentially. This is an unstable state.
+		
+		\item	If no sign is positive but at least one associated eigenvalue has real part 0, the associated function in $\mathbf{e}$ is purely sinusoidal or constant. If the state starts close to the equilibrium state, $\mathbf{x}_\mathbf{0}$, it will stay close to equilibrium over time. The state is stable.
+		
+		\item	If all signs are negative, the state will be dominated by exponential decay and the state will tend towards the equilibrium state, $\mathbf{x}_\mathbf{0}$. The state is asymptotically stable.
+	\end{itemize}
+	
+	Most realistic dynamic systems are far more complex than linear systems entailing algebraic combinations of power, sinusoidal, exponential, and other nasty functions of the time and state variables. Analytic solutions are usually impossible and numerical methods must be employed. But the notions of stability carry over to these problems and it is often possible to decide when they give rise to stable and asymptotically stable solutions.
+	
+	\section{State Space Models}\label{State Space Models}
+	A model that represents a physical system using its inputs, outputs and states as variables related to each other by a set of differential equations is called a state space model. The states of the system can evolve with time depending on their current values or the values of inputs introduced into the system over time. The states of the system can be represented as vectors in a confined space. The state space model is dependent on the type of system that we are dealing with. Generally, all physical systems are characterised into linear or non-linear systems, both of which are explained briefly in the next section.
+	
+	
+	\section{Energy Based Modelling}\label{Energy Based Modelling}
+	
+	The dynamic equations of any mechanical system are obtainable from the renowned Newtonian classical mechanics. The disadvantage of this formalism is the usage of the variables in vector form, complicating substantially the analysis when increasing the joints or if there are rotations present in the system. In these situations, it is favourable to utilise the Lagrange equations, which have a formalism of scale, simplifying the analysis for any mechanical system. To use Lagrange equations, it is essential to follow four steps listed below \cite{duartemadrid_2017_dynamic} :
+	
+	\begin{enumerate}
+		\item Calculation of all kinetic energies.
+		\item Calculation of all potential energies.
+		\item Calculation of the Lagrangian.
+		\item Solve the equations.
+		
+	\end{enumerate}
+	
+	Where the kinetic energy can be both translational and rotational, this form of energy can be a function of both, position, and the velocity $K(q(t), q(t))$.
+	
+	\newpage
+	
+	The potential energy is due to conservative forces such as the forces exerted by gravity and springs, this energy is in terms of the position $U(q(t))$. The Lagrangian is defined as
+	
+	\begin{equation}
+	\mathcal{L}=T-V
+	\end{equation}
+	
+	Therefore, the Lagrangian is defined of the following in general terms.
+	
+	\begin{equation}
+	\mathcal{L}(\boldsymbol{q}(t), \dot{\boldsymbol{q}}(t))=\boldsymbol{T}(\boldsymbol{q}(t), \dot{\boldsymbol{q}}(t))-\boldsymbol{V}(\boldsymbol{q}(t))
+	\end{equation}
+	
+	Finally, the Euler-Lagrange equations of motion for a system of $ i $ degree of freedom are defined as follows.
+	
+	\begin{equation}
+	\frac{d}{dt}\big(  \frac{\delta L(q,\dot{q})}{\delta q_{i}} \big) -\frac{\delta L(q,\dot{q})}{\delta q_i}=\tau_i
+	\end{equation}
+	
+	
+	Where $i=1,\ldots,n,\tau_i$ are the forces or pairs exerted externally in each joint, besides non conservative forces such as friction, resistance to movement of an object within a fluid and generally those that depend on time or speed. It will be obtained an equal number of dynamic equations and DOF \cite{duartemadrid_2017_dynamic}.
+	
+	\section{Kinematics}
+	
+	A precise definition of kinematics is found on Oxford dictionary which states, \begin{quote}
+		"Kinematics is a branch of mechanics concerned with the motion of objects without reference to the forces which cause the motion” \cite{kinematics}.
+	\end{quote} 
+	
+	\subsection{Forward Kinematics}
+	
+	Forward kinematics is a process of calculating end effector’s position and velocity by using known joint angles and displacements. While it is mostly used for an end effector position it could also be used for any frame in space with respect to a reference.
+	
+	\subsubsection{Denavit Hartenberg}
+	As the name prescribes, Denavit Hartenberg convention was introduced by Jacques Denavit and Richard Hartenberg in 1955. The purpose of this convention was to standardise the coordinate frames for spatial linkages. The term Denavit Hartenberg is widely known in the engineering fields. \\
+	
+	\newpage
+	There are four parameters associated with this convention. This technique is used for attaching reference frames to the links of a robotic manipulator or kinematic chains.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture2}
+			\caption{The four parameters of the classic $\mathrm{DH}$ convention are shown above, which are $\theta_{i}, d_{i}, a_{i}, \alpha_{i}$ \cite{renton_mcha4000}}.
+			\label{figs/Picture2}
+		\end{center}
+	\end{figure}
+	
+	With those four parameters, coordinates can be translated from $O_{i-1}X_{i-1}Y_{i-1}Z_{i-1}$ to $O_iX_iY_iZ_i$.
+	\begin{itemize}[label={}]
+	\item $\mathbf{d}$: offset along previous z to the common normal
+	\item $\mathbf{\theta}$: angle about previous z, from old x to new x
+	\item $\mathbf{r}$: length of the common normal (aka a,bit if using this notation, do not confuse with $\alpha$).\\ \hspace*{3 mm} Assuming a revolute joint, this is the radius about previous z.
+	\item $\mathbf{\alpha}$: angle about common normal, from old z axis to new z axis\\
+	\end{itemize}
+
+
+	\begin{equation} \label{eq/denavit}
+	A_{n}^{n-1} = 
+	\begin{bmatrix}
+	\cos{\theta_{n}} & -\sin{\theta_{n}} \cos{\alpha_{n}} & \sin{\theta_{n}} \cos{\alpha_{n}} & r_{n} \cos{\alpha_{n}} \\ 
+	\sin{\theta_{n}} & \cos{\theta_{n}} \cos{\alpha_{n}} & -\cos{\theta_{n}} \cos{\alpha_{n}} & r_{n} \sin	{\alpha_{n}} \\
+	0 & \sin{\alpha{n}} & \cos{\alpha{n}} & d_n \\
+	0 & 0 & 0 & 1 \\ 
+	\end{bmatrix} =
+	\begin{bmatrix}
+	& R &  & T \\
+	& & & & \\	
+	0 & 0 & 0 & 1 \\
+	\end{bmatrix}
+	\end{equation}
+	\\
+	
+	By using the matrix above a homogenous transformation matrix is produced where R is a 3x3 rotation submatrix and T is a 3x1 translational vector. 
+	
+	\newpage
+	\subsection{Inverse Kinematics}
+	
+	Inverse kinematics is a process for determining the joint variable's value given an end effector's position and orientation. The problem of inverse kinematic can be solved analytically for some simple manipulators utilising algebraic intuition. The problem can become complicated when dealing with nonlinearities. In these cases, there may exist multiple (finite or infinite), unique or no solutions. \par
+	A modern method to solve an inverse kinematic problem poses the question as a numeric optimisation problem. It is convenient to use a non-negative, balanced solution to prevent any one element from over fitting in many solvers. In this case, we can leverage scalar quadratic cost functions.  \par
+	Given a set of joint angles $ q $, the quadratic state error  $x-x_e$ can be concatenated through a scaling matrix $ K $. We can pose this in a common Sequential Quadratic Programming SQP solutions as a total cost. We can also minimise the deviation $ q $ from zero with a scaling factor $ W $. A minimal solution to these implies minimum end-effector error and minimum deviation from joint space.  
+	
+	
+	
+	\begin{gather*}
+	\left(q^\star,x^\star\right)=\arg{\min \lim_{q,x}{q^{T}W}q}+\left(x-x_e\right)^\top K\left(x-x_e\right) \\
+	\mathrm{\ s.t.\ }x-k\left(q\right)=0
+	\end{gather*}
+	
+	given the current configuration and pose the above can be initialised \cite{renton_mcha4000}. For the purposes of this project simple trigonometric coordinate transformations between cartesian and cylindrical coordinates is used for inverse kinematics.
+	
+	
+	
+	%%%%%%%%%%%%%%%%%%%
+	\section{Control Design Methods}
+	
+	\subsection{Motivation}
+	
+	In reality,
+	\begin{itemize}
+		\item We don’t have control over the exact position of an object, we can only apply force to the system to produce movement. 
+		\item The exact amount of force required on every part can quickly become a complex problem 
+		\item We want to minimize the total energy expenditure to achieve the task 
+		\item We want to avoid (where possible) natural constraints of the system. 
+		\item We want a reliable method of control. 	
+	\end{itemize}
+	
+		\subsection{Premise of Optimal Control}
+	
+	Optimal control theory is a division of mathematical optimisation that deals with discovering control for a dynamical system over a period of time such that an objective function is optimised \cite{imichaelross_2015_a}. \par
+	
+	It is used in numerous applications in science, engineering and operations research. For example, the dynamical system might be a spacecraft with controls corresponding to rocket thrusters, and the objective might be to reach the moon with minimum fuel expenditure \cite{luenberger_1979_introduction}. Or the dynamical system could be a nation's economy to minimise unemployment; in this case, the controls could be fiscal and monetary policy \cite{kamien_2012_dynamic}. A dynamical system may also be introduced to embed operations research problems within the optimal control theory framework \cite{ross_2016_a}. \par
+	
+	Linear quadratic regulator is an optimal control regulator that better tracks a reference trajectory compared to a traditional controller such as PID. PID controllers are usually not a choice of use when multi variables systems are in use. 
+	
+	
+	\subsection{LQR Control}
+	
+	Linear quadratic regulator (LQR) is the best feedback gain method to establish a linear system in a closed-loop algorithm. This method was adapted to optimise the 3D Printer's system to get identical output state with the desired reference input. The formulation of this control system was performed by computing the error signal based on the quadratic variable and regulator control in the LQR architecture control. 
+	
+	The basic equation of LQR can be seen in \eqref{eq/10.1}, \eqref{eq/10.2} and \eqref{eq/10.3} in which $ x $ and $ y $ represent input and output state, respectively. The symbol $ A,B $, and $ C $ are positive matrix variables representing uncertainties in the system, whereas $ u $ represent the state input vector \cite{kuantama_2018_feedback}.
+	
+	\begin{equation}\label{eq/10.1}
+	\dot{x} = Ax + Bu 
+	\end{equation}
+
+	\begin{equation}\label{eq/10.2}
+	y = Cx 
+ 	\end{equation}
+ 
+	\begin{equation}\label{eq/10.3}
+	u = -kx
+  	\end{equation}
+	  
+
+
+	
+	\subsubsection{Formulation of a Cost Function }
+	
+	A cost function, sometimes also known as a loss function; is widely used in mathematical optimisation and decision theory. It's a function that is commonly used to chart an event or values of a particular or multiple variables onto a real number, indicating some costs related to the event.
+	
+	\paragraph{Quadratic Cost}
+	The quadratic cost function is popular due to its useful properties. It is widely used across linear as well as non-linear control, this is due to it being convex and smooth. This makes evaluation of derivatives easy. It is easier to define a way that the cost function minimises at a point where the final equilibrium is required. In linear systems, the control design usually translates into some form of Ricatti equation. Ricatti's equations solutions and properties are easy to investigate. While using this in non-linear systems, it is found convenient to be used with Lyapunov functions For quadratic optimal control functions. The popularity of quadratic optimal control function has risen since the whole control engineering area is developed around it, such as LQR and LQG.\\
+	
+	\newpage
+	Given a continuous time linear system,
+	
+	\begin{equation}
+	\dot{x} = Ax + Bu
+	\end{equation}
+	
+	It's quadratic cost is given by,
+	
+	\begin{equation}
+	J=\int_{0}^{\infty}(x^T Q_x x+u^T Q_u u)d t
+	\end{equation}
+	
+	Issues arise when deviating from setpoint.
+	
+	\subsubsection{Feedback Linearisation}
+	
+	The notion of feedback linearisation of non-linear systems is a relatively recent idea in control theory, whose practical realization has been made possible by the rapid development of microprocessor technology. The basic idea of feedback linearisation control is to transform a given non-linear system into a linear system by use of a non-linear coordinate transformation and non-linear   feedback. Feedback linearisation is a useful paradigm because it allows the extensive body of knowledge from linear systems to be brought to bear to design controllers for non-linear systems. The roots of feedback linearisation in robotics predate the general theoretical development by nearly a decade, going back to the early notion of feed-forward computed torque \cite{levine_1996_the}. \\
+	
+	In the robotics context, feedback linearisation is known as inverse dynamics. The idea is to exactly compensate all of the coupling non-linearities in the Lagrangian dynamics in a first stage so that a second-stage compensator may be designed based on a linear and decoupled plant. Any number of techniques may be used in the second stage. The feedback linearisation may be   accomplished with respect to the joint space coordinates or with respect to the task space coordinates. Feedback linearisation may also be used as a basis for force control, such as hybrid control and impedance control \cite{levine_1996_the}. 
+	
+	\subsubsection*{Joint Space Inverse Dynamics}
+	
+	
+	We first present the main ideas in joint space where they are easiest to understand. The control architecture we use is important as a basis for later developments. Thus, given the plant model
+	
+	\begin{equation}\label{syseq}
+	M(q)\ddot{q}+C(q,\dot{q})\dot{q}+g(q)=\tau
+	\end{equation}
+	
+	we compute the non-linear feedback control law
+	
+	\begin{equation}\label{feedbacklin}
+	\tau = M(q)a_{q}+C(q,\dot{q})\dot{q}+g(q)
+	\end{equation}
+	
+	\newpage
+	where $a_q \in R^n$ is, as yet, undetermined. Since the inertia matrix $ M(q) $ is invertible for all q, the closed-loop system reduces to the decoupled double integrator  
+	
+	\begin{equation}\label{PIDconts}
+	\ddot{q} = a_{q}
+	\end{equation}
+	
+	Given a joint space trajectory, $q^d (t)$, an obvious choice for the outer loop term $ a_q $ is as a PD plus feed-forward acceleration control.  
+	
+	\begin{equation}\label{PIDcont}
+	a_{q} = \ddot{q}^d + K_P (q^d - q) + K_d (\dot{q}^d 0 \dot{q})
+	\end{equation}
+	
+	Substituting Equation \ref{PIDcont} into Equation \ref{PIDconts} and defining
+	
+	\begin{equation}\label{PIDconts}
+	\tilde{q} = q - q^d
+	\end{equation}
+	
+	we have the linear and decoupled closed loop system
+	
+	\begin{equation}
+	\ddot{\tilde{q}} + K_d \dot{\tilde{q}} + K_P \tilde{q} = 0
+	\end{equation}
+	
+	We can implement the joint space inverse dynamics in a so-called inner loop/outer loop architecture as shown in Fig \ref{figs/Picture3}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture3}
+			\caption{Inner loop/outer loop architecture. \cite{levine_1996_the}}
+			\label{figs/Picture3}
+		\end{center}
+	\end{figure}
+	
+	The computation of the non-linear terms in Equation \ref{feedbacklin} is performed in the inner loop, perhaps with a dedicated microprocessor to obtain high computation speed. The computation of the additional term $a_q$ is performed in the outer loop. This separation of the inner loop and outer loop terms is important for several reasons. The structure of the inner loop control is fixed by Lagrange's equations. What control engineers traditionally think of as control system design is contained primarily in the outer loop \cite{levine_1996_the}. 
+	
+	\newpage
+	
+	The outer loop control given in Equation \ref{PIDcont} is merely the simplest choice of outer loop control and achieves asymptotic tracking of joint space trajectories in the ideal case of perfect knowledge of the model given by Equation \ref{syseq}. However, one has complete freedom to modify the outer loop control to achieve various other goals without the need to modify the dedicated inner loop control. For example, additional compensation terms may be included in the outer loop to enhance the robustness to parametric uncertainty, unmodeled dynamics, and external disturbances. The outer loop control may also be modified to achieve other goals, such as tracking of task space trajectories instead of joint space trajectories, regulating both motion and force, etc. The inner loop/outer loop architecture thus unifies many robot control strategies from the literature \cite{levine_1996_the}.
+	
+	
+	\subsection{Non-linear Model Predictive Control (NMPC)}
+	
+	Non-linear model predictive control (henceforth abbreviated as "NMPC")  is an optimisation-based method for the feedback control of non-linear systems. Its primary applications are stabilisation and tracking problems, which we briefly introduce in order to describe the basic idea of model predictive control \cite{larsgrune_2017_nonlinear}. \\
+	
+	Suppose we are given a controlled process whose state $x(n)$ is measured at discrete time instants $t_n,n=0,1,2$, "Controlled" means that at each time instant we can select a control input $u(n)$ which 
+	influences the future behaviour of the state of the system. In tracking control, the task is to determine the control inputs $u(n)$ such that $x(n)$ follows a given reference $x^{ref} (n)$ as good as possible. This means that if the current state is far away from the reference then we want to control the system towards the reference and if the current state is already close to the reference then we want to keep it there. In order to keep this introduction technically simple, we consider $x(n)\in X=\mathbb{R}^d$ and $u(n)\in U=\mathbb{R}^m$, furthermore we consider a reference which is constant and equal to $x_{*}=0$, i.e., $x^{ref} (n)=x_{*}=0 $ for all $n\geq 0$. With such a constant reference, the tracking problem reduces to a stabilisation problem; in its full generality the tracking problem will be considered in Section \ref{Tracking Control Design} \cite{larsgrune_2017_nonlinear}.
+	
+	Since we want to be able to react to the current deviation of $x(n)$from the reference value $x_{*}=0$, we would like to have $u(n)$ in feedback form, i.e, in the form $u(n)=\mu(x(n))$ for some map $n$ mapping the state $x \in X$ into the set $U$ of control values. The idea of model predictive control-linear or non-linear is now to utilise a model of the process in order to predict and optimise the future system behaviour \cite{larsgrune_2017_nonlinear}. A model below of a  form is mentioned in \eqref{eq/1.1} below.
+	
+	\begin{equation} \label{eq/1.1}
+	x^{\dotplus}=f(x,u)
+	\end{equation}
+	
+	where $f: X \times U \rightarrow X$ is a known and in general non-linear map which assigns to a state $x$ and a control
+	value $u$ the successor state $x^{+}$ at the next time instant. Starting
+	from the current state $x(n)$, for any given control sequence $u(0), \ldots, u(N-1)$ with horizon length	$N \geq 2$, we can now iterate \eqref{eq/1.1} in order to construct a prediction trajectory $x_{u}$ defined by
+	
+	\begin{equation}\label{eq/1.2}
+		x_{u}(O)=x(n), \quad x_{u}(k+I)=f\left(x_{u}(k), u(k)\right), \quad k=0, \ldots, N-I
+	\end{equation}
+	
+	Proceeding this way, we obtain predictions $x_{u}(k)$ for the state of the system $x(n+k)$ at time $t_{n+k}$ in
+	the future. Hence, we obtain a prediction of the behaviour of the system on the discrete interval
+	$t_{n}, \ldots, t_{n+N}$ depending on the chosen control sequence $u(0), \ldots, u(N-1)$ \cite{larsgrune_2017_nonlinear}.
+	
+	Now we use optimal control in order to determine $u(0), \ldots, u(N-I)$ such that $x_{u}$ is as close as
+	possible to $x_{*}=0 .$ To this end, we measure the distance between $x_{u}(k)$ and $x_{*}=0$ for $k=0, \ldots, N-$ 1 by a function $1\left({x}_{{u}}({k}), {u}({k})\right)$. Here, we not only allow for penalising the deviation of the state from
+	the reference but also if desired, the distance of the control values $u(k)$ to a reference control $u_{*}$, which
+	here we also choose as $u_{*}=0 .$ A common and popular choice for this purpose is the quadratic function \cite{larsgrune_2017_nonlinear}.
+	$$
+	{l}\left({x}_{{u}}({k}), {u}({k})\right)={\left||{x}_{{u}}({k})\right||}^{2}+\lambda{||u(k)||}^{2},
+	$$
+	where $|| \cdot ||$ denotes the usual Euclidean norm and $\lambda \geq 0$ is a weighting parameter for the control, which
+	could also be chosen as 0 if no control penalisation is desired.
+	The optimal control problem now reads \cite{larsgrune_2017_nonlinear}.
+	$$
+	minimise \hspace*{7 mm}{J}({x}({n}), {u}(\cdot)):=\sum_{{k}=0}^{{N}-1} {l}\left({x}_{{u}}({k}), {u}({k})\right)
+	$$
+	with respect to all admissible control sequences ${u}(0), \ldots, {u}({N}-1)$ with $x_{u}$ generated by \eqref{eq/1.2}
+	Let us assume that this optimal control problem has a solution which is given by the minimising control
+	sequence $u^{*}(0), \ldots, u^{*}(N-1),$ i.e. \cite{larsgrune_2017_nonlinear}.
+	$$
+	\min _{u(0), \ldots, u(N-1)} J(x(n), u(\cdot))=\sum_{k=0}^{N-1} l\left(x_{u^{*}}(k), u^{*}(k)\right)
+	$$
+	In order to get the desired feedback value $\mu(x(n)),$ we now $\operatorname{set} \mu(x(n)):=u^{*}(0),$
+	i.e., we apply the first element of the optimal control sequence. This procedure is sketched in Figure \ref{figs/Picture7} .
+	
+	
+	At the following time instants $t_{n+1}, t_{n+2}$, we repeat the procedure with the new measurements
+	$x(n+1), x(n+2),$ in order to derive the feedback values $\mu(x(n+1)), \mu(x(n+2)),$ In other words,
+	we obtain the feedback law $\mu$ by an iterative online optimization over the predictions generated by our
+	model $(1.1) .^{2}$ This is the first key feature of model predictive control \cite{larsgrune_2017_nonlinear}.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture7}
+			\caption{Illustration of the NMPC step at time $ t_n $ \cite{larsgrune_2017_nonlinear}}
+			\label{figs/Picture7}
+		\end{center}
+	\end{figure}
+	
+	
+	From the prediction horizon point of view, proceeding this iterative way the trajectories $x_{u}(k), k=$
+	$0, \ldots, N$ provide a prediction on the discrete interval $t_{n}, \ldots, t_{n+N}$ at time $t_{n},$ on the interval
+	$t_{n+1}, \ldots, t_{n+N+1}$ at time $t_{n+l},$ on the interval $t_{n+2}, \ldots, t_{n+N+2}$ at time $t_{n+3}$ and so on. Hence, the
+	prediction horizon is moving and this moving horizon is the second key feature of model predictive
+	control \cite{larsgrune_2017_nonlinear}.
+	
+	Regarding terminology, another term which is often used alternatively to model predictive control is
+	receding horizon control. While the former expression stresses the use of model-based predictions, the
+	latter emphasizes the moving horizon idea. Despite these slightly different literal meanings, we prefer
+	and follow the common practice to use these names synonymously. The additional term nonlinear
+	indicates that our model \ref{eq/1.1} need not be a linear map \cite{larsgrune_2017_nonlinear}.\par
+	
+		MPC allows us to impose constraints on our system which are a result of physical constraints (actuator output and slew rate limits, displacement limits on the masses) and safety constraints (ensuring the net moment acting on the vertical beam is below a certain threshold). These are imposed as constrains on the states and the outputs of the system. 
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\newpage
+	\part*{Chapter 2}
+	\addcontentsline{toc}{section}{Chapter 2}
+	\section{System Overview}
+	In your own words, step by step, what does the program do to simulate the system
+	
+	\subsection{Flow Diagram}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture4}
+			\caption{System overview flow diagram}
+			\label{figs/Picture4}
+		\end{center}
+	\end{figure}
+	
+	\newpage
+	\section{Crane System Modelling}
+	
+	\subsection{Tower Crane System}
+	The tower crane model is based on figure \ref{figs/Picture4} with key properties shown in table \ref{tab:physical param}.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture5}
+			\caption{A tower crane model \cite{crane}.}
+			\label{figs/Picture5}
+		\end{center}
+	\end{figure}
+	
+	\subsection{Assumptions}
+	\begin{itemize}
+		\item There will be 4 actuators controlling the crane. Actuator 1 and 2 will slide the end effector and counterweight along their respective gantry. Actuator 3 will rotate the crane about the tower and actuator 4 will slide the crane up and down the tower. 
+		\item Instead of a hook, the end effector will be a nozzle which deposits filament which is stored externally from the crane and pumped through piping.
+		
+	\end{itemize}
+	
+	
+	\begin{table}[H] \centering 
+		\caption{Table meh}
+		\begin{tabular}{ll}
+			\hline
+			Parameters              & Values \\ \hline 
+			End-effector ($ m_1 $)     & 1 kg   \\ 
+			Counterweight ($ m_2 $)    & 3.6 kg \\ 
+			Horizontal Beam length  & 1.4 m  \\ 
+			Vertical Beam length    & 1 m    \\ 
+			Mass of Horizontal beam & 1.4 kg \\ 
+			Mass of Vertical Beam   & 5 kg  
+		\end{tabular}
+		\label{tab:physical param}
+	\end{table}
+	
+	The table \ref{tab:physical param} above represents the values of the constable assumed in the modelling and simulation of the project.
+	
+	
+	\subsection{Fully Actuated System}
+	
+	In the study of mechanisms, the acquired two concepts are essential such as the direct and indirect action. The first consists of movement of elements by an actuator's action, while the second consists of the action of motion transmitted by another interconnected element. Such movements are known as DOF, so that mechanical systems or mechanisms can be classified depending on the number of DOF and the number of actuators. The fully actuated mechanical systems are those having the same number of DOF and actuators \cite{duartemadrid_2017_dynamic}. \\
+	
+	Under-actuated mechanical systems are those with fewer actuators than DOF. It is important to highlight the advantages of under-actuated systems since if they do not have advantages over fully actuated mechanical systems, it will not make sense of its development. The main advantages present in under-actuated systems are energy-saving and control efforts. However, these systems are intended to perform the same functions of fully actuated systems without their disadvantages \cite{duartemadrid_2017_dynamic}.
+	
+	\newpage
+	\subsection{Mathematical Model}
+	
+	The tower crane is converted into a kinematic model and states are assigned: 
+	\begin{equation}
+	\boldsymbol{q} = 
+	\begin{bmatrix}
+	r1 \\ r2 \\ \theta \\ z
+	\end{bmatrix}
+	\end{equation}
+	
+	Which can be used to describe the motion of mass 1, mass 2, beam 1 and beam 2
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture6}
+			\caption{Diagram of the beam type 3D printer with counter balancing and showing joints and their movements}
+			\label{figs/Picture6}
+		\end{center}
+	\end{figure}
+	
+	\subsection{Forward Kinematics of the Crane System}
+	
+	As shown in the figure above, joint 3 and joint 4 are not in a continuous kinematic chain; therefore, separate transformations were needed.  The table below shows all the parameters required to obtain the forward kinematics for joint 3 and joint 4.
+	
+	\begin{table}[H] \centering 
+		\caption{DH Parameters table for base to joint 3 and joint 4}
+		\begin{tabular}{llllll}
+			\hline
+			Joint \# & Joint Type & Joint offset 'd' & Link length 'a' & Joint angle ‘$\theta$’ & Twist angle'$\alpha$' \\ \hline
+			1        & Revolute   & 0                & 0               & 0               & 0              \\
+			2        & Prismatic  & z                & 0               & 0              & -90            \\
+			3        & Prismatic  & r2               & 0               & 0               & 0             
+		\end{tabular} \vspace{5mm}
+		
+		\begin{tabular}{llllll}
+			\hline
+			Joint \# & Joint Type & Joint offset 'd' & Link length 'a' & Joint angle ‘$\theta$’ & Twist angle'$\alpha$' \\ \hline
+			1        & Revolute   & 0                & 0               & 0               & 0              \\
+			2        & Prismatic  & z                & 0               & 0              & 90            \\
+			4        & Prismatic  & r1               & 0               & 0               & 0             
+		\end{tabular}
+		\label{tab/joints}
+	\end{table}
+	
+	
+	Using the DH equation (\ref{eq/denavit}) mentioned in the background with the identified parameters in Table \ref{tab/joints} a homogeneous transformation matrix $A_{n}^{n-1}$ is produced representing transformation from $n-1$ to $n$. 
+	
+	\begin{equation}
+	T_n^0 (q)=A_1^0 (q_1 ) A_2^1 (q_2 ) \dots A_{n}^{n-1} (q_n )
+	\end{equation}
+	
+	The general equation for transformation between continuous kinematic chain is represented above.
+	
+	\begin{equation}
+	T_3^0 (q)=A_1^0 (q_1 ) A_2m1^1 (q_2 ) A_3m1^2m1 (q_3 )
+	\end{equation}
+	\begin{equation}
+	T_4^0 (q)=A_1^0 (q_1 ) A_2m2^1 (q_2 ) A_4m2^2m2 (q_4 )
+	\end{equation}
+	
+	Since we do not have a continuous kinematic chain, we will require two transformation equations as represented above. $T_3^0$ is for the transformation from origin to $r_2$ while $T_4^0$ is the transformation from origin to $r_1$, where $r_1$ is considered to be the position of the end effector for this project. \par
+	These transformations are beneficial as they are used in the project for converting joint space coordinates to cartesian coordinates which is also used simulation, verification and visualisation purposes.
+	
+	\subsubsection*{Example of FKM Output}
+		
+	These transformations are beneficial as they are used in the project for converting joint space coordinates to cartesian coordinates which is also used simulation, verification and visualisation purposes.  \\
+	
+	\begin{equation*}
+	FKM (\begin{bmatrix}
+	r_1 ,& r_2 \text{ based on }r_1 , & \theta , & z \\
+	\end{bmatrix} )
+	\end{equation*}
+
+	\begin{center} 
+		FKM([.5,(-0.08+.5+0.5)/3.6,pi/2,.5])
+	\end{center}
+		
+	\begin{align*}
+	A_0^1 &= 
+	\begin{bmatrix}
+	0 & -1 & 0 & 0 \\
+	1 & 0 & 0 & 0\\
+	0 & 0 & 1 & 0\\
+	0 & 0 & 0 & 1\\
+	\end{bmatrix} & 		
+	A_{2m2}^1 &= 
+	\begin{bmatrix}
+	-1 & 0 & 0 & 0 \\
+	0 & 1 & -1 & 0\\
+	0 & -1 & 0 & 0.5\\
+	0 & 0 & 0 & 1\\
+	\end{bmatrix} &	
+	A_0^1 &= 
+	\begin{bmatrix}
+	0 & 0 & 1 & 0 \\
+	1 & 0 & 0 & 0\\
+	0 & -1 & 1 & 0\\
+	0 & 0 & 0 & 1\\
+	\end{bmatrix} \\ \vspace{5mm}
+	A_0^1 &= 
+	\begin{bmatrix}
+	1 & 0 & 0 & 0 \\
+	0 & 0 & 1 & 0\\
+	0 & -1 & 0 & 0.5\\
+	0 & 0 & 0 & 1\\
+	\end{bmatrix} & 		
+	A_{2m2}^1 &= 
+	\begin{bmatrix}
+	1 & 0 & 0 & 0 \\
+	0 & 1 & 0 & 0\\
+	0 & 0 & 1 & 0.2556\\
+	0 & 0 & 0 & 1\\
+	\end{bmatrix} &	
+	A_0^1 &= 
+	\begin{bmatrix}
+	0 & 0 & 1 & 0.5 \\
+	1 & 0 & 0 & 0\\
+	0 & -1 & 0 & 0.5\\
+	0 & 0 & 0 & 1\\
+	\end{bmatrix} \\ \vspace{5mm}
+	A_0^1 &= 
+	\begin{bmatrix}
+	1 & 0 & 0 & 0 \\
+	0 & 1 & 0 & 0\\
+	0 & 0 & 1 & 0.5\\
+	0 & 0 & 0 & 1\\
+	\end{bmatrix} & 		
+	A_{2m2}^1 &= 
+	\begin{bmatrix}
+	1 & -1 & 0 & 0 \\
+	1 & 0 & 0 & 0\\
+	0 & 0 & 1 & 0.2556\\
+	0 & 0 & 0 & 1\\
+	\end{bmatrix} &	
+	A_0^1 &= 
+	\begin{bmatrix}
+	0 & 0 & 1 & 0.5 \\
+	1 & 0 & 0 & 0\\
+	0 & -1 & 0 & 0.5\\
+	0 & 0 & 0 & 1\\
+	\end{bmatrix} \\
+	\end{align*}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture8}
+			\caption{Ball and stick visualtization of the 3D Printer designed}
+			\label{figs/Picture8}
+		\end{center}
+	\end{figure}
+	
+	\newpage
+	\subsection{Inverse Kinematics of Crane System}
+	
+	Using simple cartesian to polar coordinate transformation following equations are obtained as listed
+	below this also includes calculation for position of $r_{2}$ making $\sum$ moments at joint 2 $=0$.
+	
+	\begin{align}
+	r_{1} & =\sqrt{x^{2}+y^{2}} \\ 
+	\theta & =\arctan \left|\frac{y}{x}\right| \\
+	r_{2} &=\frac{b e a m \operatorname{torque}+m_{1} * r_{1}}{m_{2}} \\ 
+	z & =z 
+	\end{align}
+	
+	
+	\subsection{Modelling a Crane System Using Lagrangian}
+	
+	In order to calculate the Lagrangian of a system, we compute all the potential energies which are then
+	subtracted from the kinetic energies of the system.
+	
+	\begin{align}
+	\mathcal{L}=T-V
+		\end{align}
+		\begin{align}
+		\mathcal{L}(\boldsymbol{q}(t), \dot{\boldsymbol{q}}(t))=\boldsymbol{T}(\boldsymbol{q}(t), \dot{\boldsymbol{q}}(t))-\boldsymbol{V}(\boldsymbol{q}(t))
+	\end{align}
+	\begin{align}
+		\mathcal{L}=\frac{1}{2}\left(m_{1} \dot{r}_{1}^{2}+m_{2} \dot{r}_{2}^{2}+\left(m_{1}+m_{2}+m_{b}\right) \dot{z}^{2}+m_{1} r_{1}^{2} \dot{\theta}^{2}+m_{2} r_{2}^{2} \dot{\theta}^{2}+I_{b} \dot{\theta}^{2}\right)-g z\left(m_{1}+m_{2}+m_{b}\right)
+	\end{align}
+
+	Where $m_{1}$ is mass of joint $3, m_{2}$ is mass of joint $4, m_{b}$ is mass of the horizontal beam and
+	$$
+	I_{b}=\left(\frac{1}{12} m l_{c m}^{2}+m d^{2}\right)+\left(\frac{1}{2} m r^{2}\right), \text { using paralled axis theorem }
+	$$
+	Listed above are all the kinetic and potential energies taken into account which are linear motion of $m$
+	along the beam (nozzle), linear motion of $m_{2}$ along the beam, linear motion of all masses along $z$ axis,
+	angular motion of $m_{l}$, angular motion of $m_{2}$, angular motion of beam and potential energy due to
+	gravity of all the masses respectively. \\
+	We now calculate Euler-Lagrange equations using the following:
+
+	\begin{align}
+		\frac{d}{d t}\left(\frac{\partial \mathcal{L}(q, \dot{q})}{\partial 	\dot{q}_{\imath}}\right)-\frac{\partial \mathcal{L}(q, \dot{q})}{\partial q_{i}}=\tau_{i}
+	\end{align}
+
+	\begin{align}
+		\frac{d}{d t}\left[\begin{array}{c}
+			m_{1} \dot{r}_{1} \\
+			m_{2} \dot{r}_{2} \\
+			m_{1} r_{1}^{2} \dot{\theta}+m_{2} r_{1}^{2} \dot{\theta}+I_{b} \dot{\theta} \\
+			\left(m_{1}+m_{2}+m_{b}\right) \dot{z}
+		\end{array}\right]-\left[\begin{array}{c}
+			m_{1} r_{1} \dot{\theta}^{2} \\
+			m_{2} r_{2} \dot{\theta}^{2} \\
+			0 \\
+			-\left(m_{1}+m_{2}+m_{b}\right) g
+		\end{array}\right]=\left[\begin{array}{c}
+			F_{1} \\
+			F_{2} \\
+			\tau \\
+			F_{z}
+	\end{array}\right]
+	\end{align}
+
+	\begin{align}
+		\left[\begin{array}{l}
+			m_{1} \ddot{r}_{1}-m_{1} r_{1} \dot{\theta}^{2} \\
+			m_{2} \ddot{r}_{2}-m_{2} r_{2} \dot{\theta}^{2} \\
+			2 m_{1} r_{1} \dot{r}_{1} \dot{\theta}+2 m_{2} r_{2} \dot{r}_{2} \dot{\theta}+m_{1} r_{1}^{2} \ddot{\theta}+m_{2} r_{2}^{2} \ddot{\theta}+I_{b} \ddot{\theta} \\
+			\left(m_{1}+m_{2}+m_{b}\right) \ddot{z}+\left(m_{1}+m_{2}+m_{b}\right) g
+		\end{array}\right]=\left[\begin{array}{c}
+			F_{1} \\
+			F_{2} \\
+			\tau \\
+			F_{z}
+		\end{array}\right]
+	\end{align}
+
+Second-order equations listed below
+
+	\begin{align}
+\ddot{r}_{1}=\frac{F_{1}+m_{1} r_{1} \dot{\theta}^{2}}{m_{1}}
+\end{align}
+
+	\begin{align}
+\ddot{r}_{2}=\frac{F_{2}+m_{2} r_{2} \dot{\theta}^{2}}{m_{2}}
+\end{align}
+
+	\begin{align}
+\ddot{\theta}=\frac{\tau-2\left(m_{1} r_{1} \dot{r}_{1}+m_{2} r_{2} \dot{r}_{2}\right) \dot{\theta}}{m_{1} r_{1}^{2}+m_{2} r_{2}^{2}+I_{b}}
+\end{align}
+
+	\begin{align}
+\ddot{z}=\frac{F_{z}}{\left(m_{1}+m_{2}+m_{b}\right)}-g
+\end{align}
+
+	\begin{align}
+	\ddot{r}_{1}=\frac{F_{1}+m_{1} r_{1} \dot{\theta}^{2}}{m_{1}}
+\end{align}
+
+Dynamic equation of an n-link robot in the matrix form is listed below
+
+\begin{align}
+\boldsymbol{M}(\boldsymbol{q}) \ddot{\boldsymbol{q}}+\boldsymbol{C}(\boldsymbol{q}, \dot{\boldsymbol{q}}) \dot{\boldsymbol{q}}+\boldsymbol{g}(\boldsymbol{q})=\boldsymbol{u}
+\end{align}
+
+where,
+\begin{align}
+\boldsymbol{M(q) \ddot{q}}=\left[\begin{array}{cccc}
+	m_{1} & 0 & 0 & 0 \\
+	0 & m_{2} & 0 & 0 \\
+	0 & 0 & m_{1} r_{1}^{2}+m_{2} r_{2}^{2}+I_{b} & 0 \\
+	0 & 0 & 0 & m_{1}+m_{2}+m_{b}
+\end{array}\right]\left[\begin{array}{c}
+	\ddot{r}_{1} \\
+	\ddot{r}_{2} \\
+	\ddot{\theta} \\
+	\ddot{Z}
+\end{array}\right]
+\end{align}
+
+\begin{align}
+\boldsymbol{C(q, \dot{q}) \dot{q}}=\left[\begin{array}{cccc}
+	0 & 0 & -m_{1} r_{1} \dot{\theta} & 0 \\
+	0 & 0 & -m_{2} r_{2} \dot{\theta} & 0 \\
+	2 m_{1} r_{1} \dot{\theta} & 2 m_{2} r_{2} \dot{\theta} & 0 & 0 \\
+	0 & 0 & 0 & 0
+\end{array}\right]\left[\begin{array}{c}
+	r_{1} \\
+	r_{2} \\
+	\dot{\theta} \\
+	\dot{z}
+\end{array}\right], \quad \boldsymbol{g(q)}=\left[\begin{array}{c}
+	0 \\
+	0 \\
+	0 \\
+	g\left(m_{1}+m_{2}+m_{b}\right)
+\end{array}\right]
+\end{align}
+
+\begin{align}
+\boldsymbol{u}=\left[\begin{array}{c}
+	F_{1} \\
+	F_{2} \\
+	\tau \\
+	F_{z}
+\end{array}\right]
+\end{align}
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\newpage
+	
+	\part*{Chapter 3}
+	
+	\addcontentsline{toc}{section}{Chapter 3}
+	\section{Motion control and Trajectory Generation}
+	
+	Given a set of wav-points that describes the build order of a set of walls, we need a reference to track
+	that is achievable by the machinery. This is a non-trivial problem for a few reasons.
+	\subsection{Trapezoidal Model of Speed}
+	In $3 \mathrm{D}$ extrusion printing, there is an optimum speed at which the printer head can lay down the ideal
+	thickness of material. On any run of continuous printing, it is preferred that the head starts from rest but
+	accelerates at a reasonable rate to this optimum speed which is maintained until near the end of the run
+	when deceleration returns the head to rest. In the simplest case of a run along a straight-line segment,
+	the acceleration and deceleration will be constant and of the same size giving a trapezoidal speed profile.
+	This trapezoidal profile is illustrated in Figure \ref{figs/Picture9} below.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture9}
+			\caption{Trapezoidal profile of speed $ (v) $ against time $ (t) $}
+			\label{figs/Picture9}
+		\end{center}
+	\end{figure}
+	
+	Fig. 7 Trapezoidal profile of speed (v) against time (t
+	With time variable $t,$ distance travelled $s,$ velocity $v=\frac{d s}{d t} \mathrm{~m} / \mathrm{s},$ preferred acceleration rate $a,$ optimum
+	head speed $u$ and total distance to travel $d$, the requirements are that:
+	\begin{itemize}
+		\item The run starts at rest at time $t=0$ with no distance travelled so $s(0)=t(0)=0$
+		\item The head accelerates with constant acceleration $a$ until time $t_{1}$ when speed is $u$ so $v\left(t_{1}\right)=u$
+		\item The velocity is held constant until time $t$
+		\item The head decelerates at a constant rate until it comes to rest at time $t_{e}$ so $v\left(t_{\theta}\right)=0$
+		\item The total distance travelled is $d$ so $s\left(t_{e}\right)=a$
+	\end{itemize}
+
+\newpage
+	
+	Then the dynamic system is specified by:
+	
+	\begin{align}
+		\frac{d v}{d t}=\left\{\begin{array}{cc}
+			a & 0 \leq t \leq t_{1} \\
+			0 & t_{1}<t \leq t_{2} \\
+			-a & t_{2}<t \leq t_{e}
+		\end{array}\right.
+	\end{align}
+	
+	
+	Assuming that, with the constant acceleration, the distance to be travelled is long enough to allow the
+	optimum speed to be reached, the speed and distance travelled are then given by:
+	\begin{align}
+v=\left\{\begin{array}{cc}
+	\text { at } & 0 \leq t \leq t_{1} \\
+	u & t_{1}<t \leq t_{2} \\
+	u-a\left(t-t_{2}\right) & t_{2}<t \leq t_{e}
+\end{array}\right.
+\end{align}
+
+		\begin{align}
+s=\left\{\begin{array}{cc}
+	a t^{2} / 2 & 0 \leq t \leq t_{1} \\
+	u\left(t-t_{1}\right)+\frac{u^{2}}{2 a} & t_{1}<t \leq t_{2} \\
+	u\left(t-t_{1}\right)-a\left(t-t_{2}\right)^{2} / 2+\frac{u^{2}}{2 a} & t_{2}<t \leq t_{e}
+\end{array}\right.
+	\end{align}
+
+	With $v\left(\mathrm{t}_{1}\right)=a \mathrm{t}_{1}=u, \mathrm{t}_{1}=u / a .$ To ensure the optimum speed can be reached, the distance travelled
+	at the end of acceleration must be less than half the total distance. That is
+		\begin{align}
+s\left(t_{1}\right)=\frac{a t_{1}^{2}}{2}=\frac{u^{2}}{2 a}<\frac{d}{2}
+\end{align}
+
+	Therefore, this condition can be expressed as $\mathrm{d}>\frac{\mathrm{u}^{2}}{\mathrm{a}} .$ By symmetry, $\mathrm{t}_{\mathrm{e}}-\mathrm{t}_{2}=\mathrm{t}_{1}=\frac{\mathrm{u}}{\mathrm{a}}$ so
+	
+		\begin{align}
+	s\left(t_{e}\right)=u t_{e}-\frac{u^{2}}{a}-\frac{a\left(\frac{u}{a}\right)^{2}}{2}+\frac{u^{2}}{2 a}=u t_{e}-\frac{u^{2}}{a}=d
+\end{align}
+
+	to give $t_{e}=\frac{d}{u}+\frac{u}{a}$ and $t_{2}=\frac{d}{u}$\\
+	
+	In practice, any continuous extrusion run will, at best, consist of a sequence of straight-line segments
+	of reasonable length allowing optimum speed to be reached on each segment. However, there is an
+	issue of balancing the desire for constant speed against maintaining rigid adherence to the linear
+	sections. The generation of curves requires approximation by many very small line segments where the
+	above model is not at all suitable. To deal with the most general cases, more refined approaches are
+	needed which includes smooth motion that uses the final velocity and acceleration as the initial values
+	for the following segment thus maintaining the velocity.
+	
+	\newpage
+	
+	\subsection{Multi-Segment Multi-Axis Trajectory}
+Multi-segment multi-axis trajectory is a way of generating a trajectory based on via points as shown in figure \ref{figs/Picture10}. In the use of robotics there is usually a requirement to move smoothly along a path through one or more via points without stopping. It is a requirement for this project to have a continuous trajectory that involves not stopping at the points this is due to the continuous extrusion from the nozzle of the Printer. It could cause inconsistency on the texture of the extrusion.  \par
+To make extrusion of material more uniform, the velocity must be constrained to suit the robot's actuators slew rates and the maximum extrusion limit. The path then compromises of linear segments with fifth-order quintic polynomials. The trajectory is generated by using the via points with velocity and acceleration limits. A position and a time are recorded for each time segment to suit the frequency of the controller action.
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.6\linewidth]{figs/Picture10}
+			\caption{Via points represented in blue dots of a trajectory between which the red line is where a trajectory is generated \cite{corke_2017_robotics}}
+			\label{figs/Picture10}
+		\end{center}
+	\end{figure}
+	
+	
+	The 5th order quintic polynomial is used as it has six coefficients that allows it to meet its six boundary conditions which are initial and final positions, velocities and accelerations. These polynomials are
+	given by the following equations below.
+	
+	
+	\begin{align}
+	q(t)&=a_{0}+a_{1} t_{0}+a_{2} t_{0}^{2}+a_{3} t_{0}^{3}+a_{4} t_{0}^{4}+a_{5} t_{0}^{5} \\
+	v_{0}&=a_{1}+2 a_{2} t_{0}+3 a_{3} t_{0}^{2}+4 a_{4} t_{0}^{3}+5 a_{5} t_{0}^{4} \\
+	\alpha_{0}&=2 a_{2}+6 a_{3} t_{0}+12 a_{4} t_{0}^{2}+20 a_{5} t_{0}^{3} \\
+	q_{f}&=a_{0}+a_{1} t_{f}+a_{2} t_{f}^{2}+a_{3} t_{f}^{3}+a_{4} t_{f}^{4}+a_{5} t_{f}^{5} \\
+	v_{f}&=a_{1}+2 a_{2} t_{f}+3 a_{3} t_{f}^{2}+4 a_{4} t_{f}^{3}+5 a_{5} t_{f}^{4} \\
+	\alpha_{f}&=2 a_{2}+6 a_{3} t_{f}+12 a_{4} t_{f}^{2}+20 a_{5} t_{f}^{3}
+	\end{align}
+
+	where,
+	$$
+	\begin{array}{l}
+			q_{0}=\text { initial position } \\
+		v_{0}=\text { initial velocity } \\
+		\alpha_{0}=\text { initial acceleration }\\
+	q_{f}=\text { final position } \\
+	v_{f}=\text { final velocity } \\
+	\alpha_{f}=\text { final acceleration }
+	\end{array}
+	$$
+	\subsection{Blend Feature} 
+	
+To validate the blend feature problem, consider that the trajectory is defined by $M$ configurations
+$q_{k}, k \in[1, M]$ and there are $M-1$ motion segments. As in the previous section $\boldsymbol{q}_{\boldsymbol{k}} \in \mathbb{R}^{N}$ is a vector
+representation of configuration \cite{corke_2017_robotics}. The trajectory starts from $\mathrm{q}_{1}$ at rest and finishes at a
+point $q_{M}$ and comes to a stop. However, for all the point in between $q_{1}$ and $q_{M}$ its moves through or
+closer to the intermediate configurations in a continuous motion \cite{corke_2017_robotics}.
+	
+The problem is over constricted and to achieve the intermediate configuration with continuous motion,
+the ability to reach each intermediate configuration exactly, is surrendered. To make it easier to
+understand a one-dimensional case is shown in Fig \ref{figs/Picture11}. This motion encompasses linear segments as
+well as polynomial blends. However, quintic polynomial was the choice to match the boundary
+conditions for the position, velocity, and acceleration at the starting and ending points \cite{corke_2017_robotics}.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture11}
+			\caption{Notation for multi-segment trajectory showing four points and three motion segments. Blue indicates constant velocity motion, red indicates regions of acceleration \cite{corke_2017_robotics}}
+			\label{figs/Picture11}
+		\end{center}
+	\end{figure}
+	
+	From zero initial velocity and initial condition $q_{1}$ the first segment of the trajectory accelerates, it meets
+	the line moving toward the next configuration $q_{2}$. A constant $t_{\text {acc }}$ and $t_{\text {acc}} / 2$ is set to be the blend time
+	before reaching $q_{2}$. A polynomial blend, of duration $t_{\text {acc }}$ is executed for the trajectory on the line from
+	$q_{2}$ to $q_{3}$. The process is then repeated. For each segment, a constant velocity $\dot{q}_{k}$ can be specified and
+	an average acceleration through the blend is given by equation \eqref{eq/mstraj} below \cite{corke_2017_robotics}.
+\begin{equation} \label{eq/mstraj}
+	\ddot{q}=\frac{\dot{q}_{k+1}-\dot{q}_{k}}{t_{a c c}}
+\end{equation}
+	
+	\section{Linear Quadratic Regulator (LQR) Control}
+	
+	The LQR requires a linear model to be converted into a state-space model represented by equation \eqref{eq/staspa} below.\\
+	\begin{equation}\label{eq/staspa}
+\begin{array}{l}
+	\dot{x}=A x+B u \\
+	y=C x+D u
+\end{array}
+	\end{equation}\\
+
+	In the modelling section, we have calculated 4 Euler Lagrange equations of motion given by equations \eqref{eq/ddr1}, \eqref{eq/ddr2}, \eqref{eq/ddtheta} and \eqref{eq/ddz} . These are second-order non-linear equations. To control the system with LQR, we need to convert the equations into first-order differential equations and then linearise the model..\par
+
+	\begin{equation}\label{eq/ddr1}
+		\ddot{r}_{1}=\frac{F_{1}+m_{1} r_{1} \dot{\theta}^{2}}{m_{1}}
+	\end{equation}
+
+
+	\begin{equation}\label{eq/ddr2}
+		\ddot{r}_{1}=\frac{F_{1}+m_{1} r_{1} \dot{\theta}^{2}}{m_{1}}
+	\end{equation}
+
+
+	\begin{equation}\label{eq/ddtheta}
+		\ddot{\theta}=\frac{\tau-2\left(m_{1} r_{1} \dot{r}_{1}+m_{2} r_{2} \dot{r}_{2}\right) \dot{\theta}}{m_{1} r_{1}^{2}+m_{2} r_{2}^{2}+I_{b}}
+	\end{equation}
+
+
+	\begin{equation}\label{eq/ddz}
+		\ddot{z}=\frac{F_{z}}{\left(m_{1}+m_{2}+m_{b}\right)}-g
+	\end{equation}
+
+
+For ease of calculation and simplification, we have kept the first 4 states in the column vector as joint positions followed by the next four as joint velocities.
+	\begin{equation}
+\boldsymbol{x}=\left[\begin{array}{l}
+	x_{1} \\
+	x_{2} \\
+	x_{3} \\
+	x_{4} \\
+	x_{5} \\
+	x_{6} \\
+	x_{7} \\
+	x_{8}
+\end{array}\right]=\left[\begin{array}{c}
+	r_{1} \\
+	r_{2} \\
+	\theta \\
+	z \\
+	\dot{r}_{1} \\
+	\dot{r}_{2} \\
+	\dot{\theta} \\
+	\dot{z}
+\end{array}\right]
+	\end{equation}
+	
+	\newpage
+The model in equation \eqref{eq/first_order} is converted from second order differential equations and is now represented by first order differential equations.
+
+	\begin{equation}\label{eq/first_order}
+\left[\begin{array}{c}
+	\dot{x}_{1} \\
+	\dot{x}_{2} \\
+	\dot{x}_{3} \\
+	\dot{x}_{4} \\
+	\dot{x}_{5} \\
+	\dot{x}_{6} \\
+	\dot{x}_{7} \\
+	\dot{x}_{8}
+\end{array}\right]=\left[\begin{array}{c}
+	\dot{r}_{1} \\
+	\dot{r}_{2} \\
+	\dot{\theta} \\
+	\dot{z} \\
+	\ddot{r}_{1} \\
+	\ddot{r}_{2} \\
+	\ddot{\theta} \\
+	\ddot{z}
+\end{array}\right]=\left[\begin{array}{c}
+x_{5} \\
+x_{6} \\
+x_{7} \\
+x_{8} \\
+\frac{F_{1}+m_{1} x_{1} x_{7}^{2}}{m_{1}} \\
+\frac{F_{2}+m_{2} x_{2} x_{7}^{2}}{m_{2}} \\
+\frac{\tau-2\left(m_{1} x_{1} x_{5}+m_{2} x_{2} x_{6}\right) x_{7}}{m_{1} x_{1}^{2}+m_{2} x_{2}^{2}+I_{b}} \\
+\frac{F_{z}}{\left(m_{1}+m_{2}+m_{b}\right)}-g
+\end{array}\right]
+\end{equation}
+
+Since the first orders differential equations \eqref{eq/first_order} are non-linear, the model is required to be linearised in the form of state-space representation shown in equation \eqref{eq/staspa}. The inputs of the system above are shown in equation \eqref{eq/u_forces} below.
+
+	\begin{equation}\label{eq/u_forces}
+	u=\left[\begin{array}{c}
+		F_{1} \\
+		F_{2} \\
+		\tau \\
+		F_{z}
+	\end{array}\right]
+	\end{equation}
+
+
+	As our system does not have one set point or equilibrium point, we will need to use a technique called
+	feedback linearisation. This prevents the model from breaking down as it deviates from the zero point.
+	
+	\newpage
+	\subsection{Feedback Linearisation}
+	
+Feedback linearisation is accomplished by subtracting non-linear terms out of the system equations and adding them up to the control. This results in a linear system. The computer executing the control has adequate capability to compute the non-linear terms fast enough, and it does not over-saturate the actuators, which in our case are considered ideal. The process of this is represented by the equations below \cite{franklin_2015_feedback}.
+
+	\begin{equation}
+		\dot{x}=f(x)+g(u)
+	\end{equation}
+	
+	\begin{equation} \label{eq/fxgu}
+	\begin{bmatrix}
+	\dot{x_{1}} \\
+	\dot{x_{2}} \\
+	\dot{x_{3}} \\
+	\dot{x_{4}} \\
+	\dot{x_{5}} \\
+	\dot{x_{6}} \\
+	\dot{x_{7}} \\
+	\dot{x_{8}}
+	\end{bmatrix} = 
+	\begin{bmatrix}
+	x_{5} \\
+	x_{6} \\
+	x_{7} \\
+	x_{8} \\
+	\frac{m_1 x_1 x_7^2}{m_1} \\
+	\frac{m_2 x_2 x_7^2}{m_2} \\
+	-\frac{2(m_1 x_1 x_5 + m_2 x_2 x_6)x_7}{m_1 x_1^2 + m_2x_2^2 + I_b} \\
+	-g \\
+	\end{bmatrix} +
+	\begin{bmatrix}
+	0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 \\
+	\frac{1}{m_{1}} & & & \\
+	0 & \frac{1}{m_{2}} & 0 & 0 \\
+	0 & 0 & \frac{1}{m_1 x_1^2 + m_2 x_2^2 + I_b} & 0 \\
+	0 & 0 & 0 & \frac{1}{m_1  + m_2  + m_b}
+	\end{bmatrix}\ 
+	\begin{bmatrix}
+	F_1 \\
+	F_2 \\
+	\tau \\
+	F_z \\
+	\end{bmatrix}
+	\end{equation}
+	
+	
+	The feedback linearizing control is found by simply inspecting equation \eqref{eq/fxgu} as
+	
+	\begin{equation} \label{eq/linear_u}
+	u=\left[\begin{array}{c}
+	F_{1} \\
+	F_{2} \\
+	\tau \\
+	F_{z}
+	\end{array}\right]=\left[\begin{array}{c}
+	\mu_{1}-m_{1} x_{1} x_{7}^{2} \\
+	\mu_{2}-m_{2} x_{2} x_{7}^{2} \\
+	\mu_{\tau}\left(m_{1} x_{1}^{2}+m_{2} x_{2}^{2}+I_{b}\right)+2\left(m_{1} x_{1} x_{5}+m_{2} x_{2} x_{6}\right) x_{7} \\
+	\left(\mu_{4}+g\right)\left(m_{1}+m_{2}+m_{b}\right)
+	\end{array}\right]
+	\end{equation}
+
+	Substituting \eqref{eq/linear_u} into \eqref{eq/fxgu} gives us which is in the State-Space form
+	
+	\begin{equation}
+	\left[\begin{array}{c}
+	\dot{x}_{1} \\
+	\dot{x}_{2} \\
+	\dot{x}_{3} \\
+	\dot{x}_{4} \\
+	\dot{x}_{5} \\
+	\dot{x}_{6} \\
+	\dot{x}_{7} \\
+	\dot{x}_{8}
+	\end{array}\right]=\left[\begin{array}{llllllll}
+	0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0
+	\end{array}\right]\left[\begin{array}{c}
+	x_{1} \\
+	x_{2} \\
+	x_{3} \\
+	x_{4} \\
+	x_{5} \\
+	x_{6} \\
+	x_{7} \\
+	x_{8}
+	\end{array}\right]+\left[\begin{array}{cccc}
+	0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 \\
+	\frac{1}{m_{1}} & 0 & 0 & 0 \\
+	0 & \frac{1}{m_{2}} & 0 & 0 \\
+	0 & 0 & 1 & 0 \\
+	0 & 0 & 0 & 1
+	\end{array}\right]\left[\begin{array}{c}
+	\mu_{1} \\
+	\mu_{2} \\
+	\mu_{\tau} \\
+	\mu_{4}
+	\end{array}\right]
+	\end{equation}
+	
+	\newpage
+
+	where,
+	
+	\begin{align*}
+	A & = 
+	\begin{bmatrix}
+	0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 0 & 0 & 0 & 0
+	\end{bmatrix} & 
+	B & = 
+	\begin{bmatrix}
+	0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 \\
+	\frac{1}{m_{1}} & & & \\
+	0 & \frac{1}{m_{2}} & 0 & 0 \\
+	0 & 0 & \frac{1}{m_1 x_1^2 + m_2 x_2^2 + I_b} & 0 \\
+	0 & 0 & 0 & 1
+	\end{bmatrix} \\
+	C & = 
+	\begin{bmatrix}
+	1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\
+	\end{bmatrix} & 
+	D & =0 \\
+	\end{align*}
+	
+	
+	It is also worthy to note that the linearised system can be demonstrated to be controllable and
+	observable.
+	
+	\subsection{Controllability and Observability}
+	Controllability and observability are the two major concepts open modern control system theory. Rudolf Kalman in 1960 introduced these concepts. Controllability is the ability of a particular actuator
+	configuration to control all the states of a system while observability is the ability of a particular sensor
+	configuration to supply all the information required to estimate all the states of the system. It is possible
+	to check if a system is controllable using the controllability matrix below and verifying if the $\operatorname{rank}(\mathcal{C})=n$, where $n$ is the length of the matrix.
+
+	$$
+	\mathcal{C}=\left[\begin{array}{lllll}
+	{B} & {AB} & {A}^{2} {~B} & \cdots & {A}^{{n}-1} {~B}
+	\end{array}\right]
+	$$
+	It is confirmed that the controllability matrix of linearised system is full rank.
+	Similarly, observability can be verified using the observability matrix mentioned below if $\operatorname{rank}(O)=$
+	${n}$, where ${n}$ is the length of the matrix.
+	$$
+	O=\left[\begin{array}{c}
+	{C} \\
+	{CA} \\
+	{CA}^{2} \\
+	\vdots \\
+	{CA}^{{n}-1}
+	\end{array}\right]
+	$$
+	The observability matrix of the linear system is also full rank, therefore making the system observable.
+	
+	\newpage
+	\subsection{Tracking Control Design}\label{Tracking Control Design}
+	
+	Given a linear system
+	
+	\begin{equation}
+	\dot{x}=A x+B u
+	\end{equation}
+		
+	And a desired trajectory
+
+		\begin{equation}
+	x^{*}(t) \\
+	\end{equation}
+		\begin{equation}
+	u=-k x
+	\end{equation}
+
+	we can define the error $\tilde{x}(t)$ between our current and desired state at each time $t$ as
+	\begin{equation}
+		\tilde{x}(t)=x(t)-x^{*}(t)
+	\end{equation}
+
+	with our goal being to find the control action u to minimise this difference at each time-step.
+	We can take the derivative of equation XX to give:
+	
+	\begin{equation}
+	\tilde{\boldsymbol{x}}(\boldsymbol{t})=\dot{\boldsymbol{x}}(\boldsymbol{t})-\dot{\boldsymbol{x}}^{*}(\boldsymbol{t})
+	\end{equation}
+
+	And substituting in equation XX gives:
+	
+	\begin{equation}
+	\tilde{\tilde{x}}=A x+B u-\dot{x}^{*}(t)
+	\end{equation}
+
+	Rearranging and substituting in equation XX gives us:
+	
+	\begin{align}
+	\tilde{x}=A\left(\tilde{x}+x^{*}\right)+B u-\dot{x}^{*}(t) \\
+		\dot{\tilde{x}}=A \tilde{x}+B u+A \dot{x}^{*}(t)-\dot{x}^{*}(t)
+	\end{align}
+
+	Now, if we rewrite our desired control force $\mu$ as:
+	
+	\begin{equation}
+	\mu=v_{1}+v_{2}
+	\end{equation}
+	
+	Then we can expand equation $X X$ as:
+	
+	\begin{equation}
+	\dot{\tilde{x}}=A \tilde{x}+B v_{2}+B v_{1}-A x^{*}+\dot{x}^{*}(t)
+	\end{equation}
+
+	\newpage
+	
+	Now if we impose that:
+	
+	\begin{equation}
+	\boldsymbol{B} v_{1}-A x^{*}+\dot{x}^{*}(t)=0
+	\end{equation}
+	
+	Which can be rearranged to give:
+	
+	\begin{equation}
+	v_{1}=B^{-1}\left(-A x^{*}+\dot{x}^{*}(t)\right)
+	\end{equation}
+	
+	Equation XX now simplifies to:
+	
+	\begin{equation}
+	\dot{\tilde{x}}=A \tilde{x}+B v_{2}
+	\end{equation}
+	
+	And we can use a simple gain $\mathrm{k}$ from our $\mathrm{LQR}$ such that:
+	
+	\begin{equation}
+	v_{2}=-k \tilde{x}=-k\left(x-x^{*}(t)\right)
+	\end{equation}
+		
+	Thus, we now have a position and velocity tracking controller for our linearised system.
+	
+	\subsection{Cost Function Weightings and Computed Gains}
+	
+	The cost function is shown in eq \eqref{eq/cost} below.
+	
+	\begin{equation} \label{eq/cost}
+	C=\int_{0}^{\infty}\left(x^{T} Q_{x} x+u^{T} Q_{u} u\right) d t
+	\end{equation}
+		
+	where
+	
+	\begin{equation}
+	Q_u = 
+	\begin{bmatrix}2000 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ 0 & 2000 & 0 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & 1000 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 100 & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 & 200 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0 & 200 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0 & 0 & 100 & 0 \\ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 10\end{bmatrix}
+	\end{equation}
+	
+	\begin{equation}
+	Q_{u}=0.001
+	\end{equation}
+	
+	The costs are chosen to prioritise the position states in $Q_{x}$. It is our priority to achieve the desired
+	positions for increased precision and repeatability. The velocity states in $Q_{x}$ are punished as they could
+	have a little flexibility compared to the positions. The input cost $Q_{u}$ is punished for reducing the amount
+	of force generated as a control action.
+	
+	\newpage
+	
+	The gains $K$ in matrix \eqref{eq/k_gain} are computed using the linearised system and processing it through the
+	Algebraic Ricatti equation \eqref{eq/ricatti} along with the cost function.
+	
+	\begin{equation}\label{eq/ricatti}
+	A^{T} S+S A-S B Q_{u}^{-1} B^{T} S+Q_{x} B^{T}+Q_{x}=0
+	\end{equation}
+
+	Where ${K}$ is derived from S using equation \eqref{eq/blah}
+	
+	\begin{equation}\label{eq/blah}
+	K=R^{-1}\left(B^{T} S+N^{T}\right)
+	\end{equation}
+
+	Thus, the ${K}$ gains are computed as
+	
+	\begin{equation}\label{eq/k_gain}
+	K = 
+	\begin{bmatrix}1414.2 & 0.0000 & 0.0000 & 0.0000 & 450.40 & 0.0000 & 0.0000 & 0.0000 \\ 0.0000 & 1414.2 & 0.0000 & 0.0000 & 0.0000 & 458.50 & 0.0000 & 0.0000 \\ 0.0000 & 0.0000 & 1000.0 & 0.0000 & 0.0000 & 0.0000 & 319.40 & 0.0000 \\ 0.0000 & 0.0000 & 0.0000 & 316.20 & 0.0000 & 0.0000 & 0.0000 & 103.10\end{bmatrix}
+	\end{equation}
+	
+	\newpage
+	
+	\section{Non-linear Model Predictive Control NMPC}
+	
+	\subsection{NMPC Algorithm}
+		
+	The simulation code works by initialising the parameters of the system and then generating the trajectory using our provided path. We then run a loop to simulate the system whereby we generate a control action based on the current states of the system, then predict using our model, the states of the system at the next time step. This prediction can then be used at the next time step and the loop repeats over the course of our entire trajectory. \par
+	
+	We then plotted the results to ensure the trajectory was matched.
+	
+		\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/fmincon}
+			\caption{NMPC problem computation flow diagram}
+			\label{figs/fmincon}
+		\end{center}
+	\end{figure}
+	
+	
+	\subsection{Fmincon}
+	Fmincon finds a minimum of a constrained non-linear multi variable function.
+	\begin{equation}
+	\min _{x} f(x) \text { such that }\left\{\begin{aligned}
+	c(x) & \leq 0 \\
+	{ceq}(x) &=0 \\
+	A \cdot x & \leq b \\
+	A e q \cdot x &=b e q \\
+	l b &<x<u b
+	\end{aligned}\right.
+	\end{equation}
+	In the equation above $b$ and $beq$ are vectors, $A$ and $ Aeq $ are matrices, $c(x)$ and $\operatorname{ceq}(x)$ are functions that return vectors, and $f(x)$
+	is a function that returns a scalar. $f(x), c(x),$ and $\operatorname{ceq}(x)$ can be non-linear functions. $x, lb,$ and $ub$ can be
+	passed as vectors or matrices \cite{rabaey_optimization}.\\
+	
+	Fmincon finds a constrained minimum of a scalar function of several variables starting at an initial estimate. This is generally referred to as constrained non-linear optimisation or non-linear programming \cite{rabaey_optimization}.
+	
+	There are a variety of options that can be used to solve for the non-linear optimisation problem some of these options selected were as follow:
+	
+\begin{itemize}
+	\item Optimisation algorithm
+	\subitem Sequential Quadratic Programming (SQP)
+	\item Constraint tolerance
+	\subitem $ 1 \times 10^{-3} $
+	\item Maximum number of function evaluations
+	\subitem 6000
+\end{itemize} 
+	
+	\subsection{Sequential Quadratic Programming (SQP)}
+	
+	SQP methods represent state-of-the-art in non-linear programming methods. Schittowski [34], for
+	example, has implemented and tested a version that out performs every other tested method in terms of
+	efficiency, accuracy, and percentage of successful solutions, over a large number of test problems.\\
+	Based on the work of Biggs [1], Han [22], and Powell ([31],[32]), the method allows you to closely
+	mimic Newton's method for constrained optimization just as is done for unconstrained optimization. At
+	each major iteration an approximation is made of the Hessian of the Lagrangian function using a quasi-
+	Newton updating method. This is then used to generate a QP subproblem whose solution is used to
+	form a search direction for a line search procedure. An overview of SQP is found in Fletcher $[13],$ Gill
+	et al. [19] , Powell [33] , and Schittowski [23] . The general method, however, is stated here.\\
+	
+	Given the problem description in GP (Eq. 2.1 ) the principal idea is the formulation of a QP subproblem
+	based on a quadratic approximation of the Lagrangian function
+	$$
+	L(x, \lambda)=f(x)+\sum_{i=1} \lambda_{i} \cdot g_{i}(x)
+	$$
+	
+	Here, Eq. 2.1 is simplified by assuming that bound constraints have been expressed as inequality constraints. The QP sub problem is obtained by linearising the non-linear constraints \cite{a2001_computation}.
+
+	
+	\subsection{Cost Function}
+	The cost function is shown below
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture12}
+			\caption{A  common 3 axis cartesian FDM 3D printer commonly consisting of 3 actuators}
+			\label{figs/Picture12}
+		\end{center}
+	\end{figure}
+	
+	
+	\textcolor{red}{Give an example in maths notation of a single cost being generated, for one horizon step,
+	Then give an example of what the cost would be} \par
+
+	The objective cost functions goal was to find such a control force that minimised the error between the end effector position and its desired position at each step in time along its trajectory. This was done by computing the 8xH horizon prediction matrix qH based on the nominal 4xH horizon control matrix $ U $. The cost was then defined as the sum of the squared error between the current and desired states at each point along the trajectory multiplied by the tuning matrix Q. This framework mimics a simple Proportional controller. \\
+	As we assumed ideal actuators, there was no cost punishment on the actuators.
+	
+	\newpage
+	\subsection{Constraints and Bounds}
+	Upper-bound and lower-bound for control forces U based on actuator torque limits.
+	
+	\begin{table}[H]\center
+	\begin{centering}
+		\begin{tabular}{lc}
+			\textbf{Joint number} & \textbf{Force/Torque limits} \\ \hline
+			Joint 1 (Revolute)&  $ -2 \leq J_1 \leq 2 $  \\ \hline
+			Joint 2 (Prismatic)&  $ -3 \leq J_1 \leq 3 $ \\ \hline   
+			Joint 3 (Prismatic) &  $ -4 \leq J_1 \leq 4 $ \\ \hline    
+			Joint 4 (Prismatic) &  $ 48 \leq J_1 \leq 68 $ \\ \hline                                    
+		\end{tabular}
+	\end{centering}
+\end{table}
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\newpage
+	\part*{Chapter 4}
+	\addcontentsline{toc}{section}{Chapter 4}
+	\section{Simulation}
+	
+	\subsection{MATLAB functions for Simulated System}
+	
+	\begin{table}[H]
+		\begin{centering}
+			\begin{tabular}{ll}
+				\textbf{Function Name}               & \textbf{Description}                                                                                                                    \\ \hline
+				FKM.m                       &\begin{tabular}[c]{@{}l@{}}    Generates the transformation matrices given joint angle \\ and displacements  \end{tabular}                                                     \\ \hline
+				IKM.m                       & \begin{tabular}[c]{@{}l@{}}    Generated the joint angles and displacements given \\ cartesian coordinates. \end{tabular}                                                       \\ \hline
+				costvel.m                   & Cost function used for NMPC.                                                                                                  \\ \hline
+				massmatrix.m                & Run the simulation for the nonlinear model using ode4                                                                          \\ \hline
+				nonlcon.m                   & Non-linear constraints for the NMPC                                                                                           \\ \hline
+				ode4.m                      & 4th order Runga-Kutta solver                                                                                                   \\ \hline
+				TrajectoryGenereration.m    & \begin{tabular}[c]{@{}l@{}} Generates a trajectory as a trapezoidal profile\\ between each waypoint.     \end{tabular}                                                       \\ \hline
+				TrajectoryGenerationNEW.m   & \begin{tabular}[c]{@{}l@{}}  Generates a trajectory given a velocity and \\ acceleration constraint while incorporating the blend feature\\ for smooth motion.\end{tabular}    \\ \hline
+				RUNLQR.m & \begin{tabular}[c]{@{}l@{}}  Run a script with a set of instructions for LQR\\ control and Feedback linearization to simulate the\\ model given some waypoints. \end{tabular}  \\ \hline
+				RUNMPC.m & \begin{tabular}[c]{@{}l@{}} Run a script with a set of instructions for MPC\\ control and Feedback linearization to simulate the\\ model given some waypoints.  \end{tabular}  \\ \hline
+				Parameters.m                & Parameters for the constants used in the system.                                                                               \\ \hline
+				Parameters\_DH.m            & Parameters used for Denavit Hartenberg convention                                                                              \\ \hline
+				controllervel.m             & Setup for NMPC controller using fmincon.                                                                                      \\ \hline
+				plotRobot.m                 & \begin{tabular}[c]{@{}l@{}}  Plotting the animation for the robot following \\the desired trajectory.  \end{tabular}                                                          \\ \hline
+				geometricJacobian.m         & Calculation for geometric Jacobian                                                                                             \\ \hline
+				skew.m                     & \begin{tabular}[c]{@{}l@{}} takes column vector u of length 3 and returns a matrix $S$ \\ such that $S_v = u \times v$.   \end{tabular}                                                  \\ \hline
+				drawFrame.m                 & Draws a frame for plotting                                                                                                     \\ \hline
+				mstraj.m                    & Generates a smooth trajectory with blends \\ \hline                                                                                      
+			\end{tabular}
+		\end{centering}
+	\end{table}
+	
+	\newpage
+	\subsection{Simulating in MATLAB}
+	
+	\subsection{Setting up a Run Script}
+	
+	Several scripts were made to simulate the system with two different controllers. All the simulations ran at a time step of 10 milliseconds. This time step was used to increase the resolution of the trajectory. \\
+	
+	Ordinary differential equation solvers were used for the simulation of the model. To save time, ODE4.m was used for the non-linear model to reduce the simulation time. The drawback was the reduced accuracy. However, for the number of iterations the optimization run, the 4 \textsuperscript{th} order Runga Kutta solver was enough to provide good results. \\
+	ODE45.m was used to simulate the model for LQR control. ODE45 is based on an explicit Runge-Kutta (4,5) formula, the Dormand-Prince pair. It is a single-step solver in computing $y(t_n )$, it needs only the solution at the immediately preceding time point, $y(t_{(n-1)} )$ \cite{shampine_1997_the}. \\
+
+	\subsection{Animating a Script}
+	
+	The code used to animate the robot in Matlab is shown in Appendix \ref{animate}. The code utilised \textit{plot3()}, a Matlab inbuilt function that allows you to plot 3 dimensional vectors. A loop was made based on the duration of the simulation which called the function at each time step to draw a frame of the beam type 3D printer, thus providing an animated effect.
+	
+	\newpage
+	\subsection{Trajectory Generator Applied to Controlled System}
+	
+	We can apply the trajectory generator to produce a path for the LQR crane system to follow. The University logo is an excellent example, as it has both sharp edges and smooth curves. 
+	
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.5\linewidth]{figs/Picture21}
+			\caption{University of Newcastle logo}
+			\label{figs/Picture21}
+		\end{center}
+	\end{figure}
+	
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture22}
+			\caption{Waypoints extracted from The University of Newcastle's logo}
+			\label{figs/Picture22}
+		\end{center}
+	\end{figure}
+	
+	Figure \ref{figs/Picture22} above shows the feature points taken from The University of Newcastle's logo. The sharp corners and smooth curves can be seen. These points will be used for trajectory generation to produce the desired trajectory. 
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.8\linewidth]{figs/Picture23}
+			\caption{Desired trajectory points extracted from waypoints of the logo}
+			\label{figs/Picture23}
+		\end{center}
+	\end{figure}
+	
+	The desired trajectory is generated using the feature points provided. The points are spaced at 10 milliseconds. Please note that what appears to be a blue line are 3,806 points packed together.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.9\linewidth]{figs/Picture24}
+			\caption{The simulated tower crane model tracking the trajectory}
+			\label{figs/Picture24}
+		\end{center}
+	\end{figure}
+	
+	Using the forward kinematic model, figure \ref{figs/Picture24} was created using $ plot3 $ function in Matlab to obtain a simulated visualization of the crane system operating. The visualization simulation was done for every 10th step in the figure above. This is really helpful to diagnose if the system is not working as expected. 
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.9\linewidth]{figs/Picture25}
+			\caption{The desired trajectory in task space coordinates}
+			\label{figs/Picture25}
+		\end{center}
+	\end{figure}
+	
+	Figure \ref{figs/Picture25} above shows the position, velocity and acceleration trajectory generated for the waypoints provided to the trajectory generator. The plots are for 3 dimensional task space coordinates. Please note that the desired trajectory for the $ Z $ is a sin wave, that is done intentionally to observe if the controller is able to track the reference properly.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=.9\linewidth]{figs/Picture26}
+			\caption{The desired trajectory in joint space coordinates}
+			\label{figs/Picture26}
+		\end{center}
+	\end{figure}
+
+	The trajectory then transforms through inverse kinematics from 3 dimensional task space to the joint space coordinates which are $ r_1 $, $ r_2 $, $ \theta $ and $ z $.
+\newpage
+
+\subsection{Using LQR}
+
+This section shows and provides an explanation from results and plots obtained using the LQR control method.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture27}
+			\caption{Simulated results of the LQR controller tracking a desired position trajectory}
+			\label{figs/Picture27}
+		\end{center}
+	\end{figure}
+	
+	
+	Figure \ref{figs/Picture27} above shows both the desired and achieved trajectory, note that the values for $\theta$ is shown on the right hand side of the plot as they are in radians. It can be seen that the tracking control is performing with high accuracy.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture28}
+			\caption{Simulated results of the LQR controller tracking a desired velocity trajectory}
+			\label{figs/Picture28}
+		\end{center}
+	\end{figure}
+	
+ Similarly, in figure \ref{figs/Picture28} the tracking controller is also considering the velocities and tracking them with good precision, note that the velocity of the rotational joint is now provided in $ deg/s $ on the right side of the plot.
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture29}
+			\caption{Simulated results of the LQR controller tracking a desired acceleration trajectory}
+			\label{figs/Picture29}
+		\end{center}
+	\end{figure}
+	
+	 Although the acceleration tracking was not implemented in the control design, the figure \ref{figs/Picture29} shows the desired and achieved results also note that the acceleration of the revolute joint is on the right side of the plot in $ deg/s^2 $.
+
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture30}
+			\caption{Control forces applied by actuators}
+			\label{figs/Picture30}
+		\end{center}
+	\end{figure}
+	
+	
+
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture31}
+			\caption{Moments acting about joint 2}
+			\label{figs/Picture31}
+		\end{center}
+	\end{figure}
+	
+
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture32}
+			\caption{LQR Controller vs trajectory tracking of the end effector in task space. (Top View)}
+			\label{figs/Picture32}
+		\end{center}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture322}
+			\caption{LQR Controller vs trajectory tracking of the end effector in task space. (Side View)}
+			\label{figs/Picture322}
+		\end{center}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture323}
+			\caption{LQR Controller vs trajectory tracking of the end effector in task space. (Isometric View)}
+			\label{figs/Picture323}
+		\end{center}
+	\end{figure}
+	
+	\newpage
+	\subsection{Using NMPC}
+	
+	MPC FORMULATION
+	[TODO] MPC FORMULATION
+	MPC RESULTS
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture33}
+			\caption{Simulated results of the NMPC controller tracking a desired position trajectory}
+			\label{figs/Picture33}
+		\end{center}
+	\end{figure}
+	
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture34}
+			\caption{Simulated results of the NMPC controller tracking a desired velocity trajectory}
+			\label{figs/Picture34}
+		\end{center}
+	\end{figure}
+	
+
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture35}
+			\caption{Simulated results of the NMPC controller tracking a desired acceleration trajectory}
+			\label{figs/Picture35}
+		\end{center}
+	\end{figure}
+	
+
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture36}
+			\caption{A  common 3 axis cartesian FDM 3D printer commonly consisting of 3 actuators}
+			\label{figs/Picture36}
+		\end{center}
+	\end{figure}
+	
+	Fig. 25 Acceleration tracking using MPC
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture391}
+			\caption{NMPC Controller vs trajectory tracking of the end effector in task space. (Top View)}
+			\label{figs/Picture381}
+		\end{center}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture392}
+			\caption{NMPC Controller vs trajectory tracking of the end effector in task space. (Side View)}
+			\label{figs/Picture382}
+		\end{center}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\begin{center}
+			\includegraphics[width=1\linewidth]{figs/Picture393}
+			\caption{NMPC Controller vs trajectory tracking of the end effector in task space. (Isometric View)}
+			\label{figs/Picture383}
+		\end{center}
+	\end{figure}
+	Fig. 26:Control forces demanded by MPC
+	
+	
+	\newpage
+	\section{Discussion}
+	
+	\subsection{LQR}
+	
+	Did it work? What do the resulting graphs say?\\
+	How difficult was it to implement?\\
+	Was the speed of computation useful for tuning the system?\\
+	Is this an ideal system for a real system?\\
+	How robust is it? Is it better than PID control? (electricity costs money and this is optimal)\\
+	Overall, what have you learned about the use of tragectory generators with respect to LQR\\
+	
+	\subsection{NMPC}
+	
+	Did it work? What do the resulting graphs say?\\
+	How difficult was it to implement?\\
+	Was the speed of computation useful for tuning the system? \\
+	Is this an ideal system for a real system?\\
+	How robust is it? Is it better than LQR control? (electricity costs money and this is optimal)\\
+	Was it hard to implement trajectory generation? Why? Why not?\\
+	
+	\subsection{Comparison}
+	
+	Chopping and changing MPC is hard
+	
+	\section{Conclusion}
+	This is one of the most important parts of the report. In the conclusion section, you should \\
+	briefly summarise the results,\\
+	“In this report, a crane model was developed using lagrangian mechanics. Two suitable modern control methods were developed and applied to the system in a coordinated simulation. thing here) was used.\\  
+	reflect on the work presented,\\
+	Overall, the system was successful and could be applied to real systems and im going to explain why\\
+	make recommendations\\
+	Which control method would you pick, which trajectory method do you suggest, and explain why\\
+	suggest future work or improvements.\\
+	
+	If someone were to follow your work, what are the next three steps they would have to take in order to actually make money off this project\\
+	Be careful with feedback linearization\\
+	Use robust feedback linearization\\
+	Make sure observability, in real life you need a nonlinear observer\\
+	
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\newpage
+	\bibliographystyle{IEEEtran} %%ieeetran -- FYP_REFERENCES
+	\bibliography{FYP_REFERENCES} % This is the .bib file where the bibliography database is stored
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\newpage
+	\appendix
+	
+	\section{Appendix A}
+	
+	\begin{table}[H] \label{tab:physical Characteristics}
+		\caption{Definition of symbols}
+		\begin{tabular}{lll}
+			\textbf{Physical Characteristics}                 & \textbf{Symbology} & \textbf{Units}                              \\ \hline
+			Acceleration of gravity                           & g                  & $m/s^2 $     \\
+			Distance of nozzle from centre of the beam        &$ r_1 $              & m                                           \\
+			Distance of counterweight from centre of the beam & $r_2$               & m                                           \\
+			Mass of nozzle                                    & $m_1$               & kg                                          \\
+			Mass of Counterweight                             & $m_2 $              & kg                                          \\
+			Angular position of the tower                     & $\theta$                  & rad                                         \\
+			Generalized coordinates                           & $q$                  & $m,rad$                                     \\
+			Generalized velocities                            & $\dot{q}$          & $m/s,m/rad$ \\
+			Kinetic Energy                                    & K                  & J                                           \\
+			Potential Energy                                  & U                  & J                                           \\
+			Lagrangian                                        & L                  & J                                          
+		\end{tabular}
+	\end{table}
+	
+	\newpage
+	\section{Appendix B}\label{animate}
+	
+	\lstinputlisting[
+	language=Matlab,
+	float=h,
+	numbers=left,
+	xleftmargin=1cm,
+	frame=shadowbox,
+	caption={Matlab robot animation code.\label{lst:matlabserial}},
+	morekeywords={try,catch}
+	]{Code/plotRobot.m}
+	
+	\lstinputlisting[
+	language=Matlab,
+	float=h,
+	numbers=left,
+	xleftmargin=1cm,
+	frame=shadowbox,
+	morekeywords={try,catch}
+	]{Code/plotRobot2.m}
+	
+\end{document}

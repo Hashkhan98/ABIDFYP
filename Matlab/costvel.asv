@@ -1,18 +1,12 @@
-function ctemp = costvel(U,qstar, q0,H,tspan,simstep)
+function ctemp = costvel(U,qstar, q,H,tspan,simstep,Q,R)
 
 ctemp = 0; %Initialise nil cost
 
-Q = diag([2e5 2e5 1e5 1e5 2e1 2e1 1e1 1e1]);    %State Weights matrix
-R = diag([1 1 100 0.001])*0.001;                                %Control-input Weights matrix
-
-tic
-% q = repmat(q0(:,1),1,H+1);        %Pre-allocate size for faster execution
-q = [q0,qo,qo,
-toc
 for i = 1:H
 
-    q(:,i+1)= massmatrix(q(:,i),U(:,i),tspan);      %Compute dx = fx + gu based on current x and u over horizon H 
-    ctemp = ctemp + ((qstar(:,simstep -1 + i) - q(:,i))'*Q*(qstar(:,simstep -1 + i) - q(:,i))) + U(:,i)'*R*U(:,i);
+    q(:,1)= massmatrix(q(:,1),U(:,1),tspan);      %Compute dx = fx + gu based on current x and u over horizon H 
+    
+    ctemp = ctemp + ((q(:,i) - qstar(:,simstep -1 + i^2) )'*Q*(q(:,i^2) - qstar(:,simstep -1 + i^2))) + U(:,i^2)'*R*U(:,i^2);
 
 end
 

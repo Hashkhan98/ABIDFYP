@@ -1,0 +1,37 @@
+\contentsline {figure}{\numberline {1}{\ignorespaces 3D printer making an engine block \cite {a2019_3d}\relax }}{10}{figure.caption.9}%
+\contentsline {figure}{\numberline {2}{\ignorespaces A common 3 axis cartesian FDM 3D printer commonly consisting of 3 actuators \cite {medlicott_blog}\relax }}{11}{figure.caption.10}%
+\contentsline {figure}{\numberline {3}{\ignorespaces Apis Cor's 3D Printer shown printing walls for a house retrieved from \cite {beach_new}\relax }}{12}{figure.caption.11}%
+\contentsline {figure}{\numberline {4}{\ignorespaces The four parameters of the classic $\mathrm {DH}$ convention are shown above, which are $\theta _{i}, d_{i}, a_{i}, \alpha _{i}$ \cite {renton_mcha4000}\relax }}{17}{figure.caption.12}%
+\contentsline {figure}{\numberline {5}{\ignorespaces Inner loop/outer loop architecture. \cite {levine_1996_the}\relax }}{21}{figure.caption.16}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Illustration of the NMPC step at time $ t_n $ \cite {larsgrune_2017_nonlinear}\relax }}{24}{figure.caption.17}%
+\contentsline {figure}{\numberline {7}{\ignorespaces System overview flow diagram\relax }}{25}{figure.caption.20}%
+\contentsline {figure}{\numberline {8}{\ignorespaces A tower crane model \cite {crane}.\relax }}{26}{figure.caption.21}%
+\contentsline {figure}{\numberline {9}{\ignorespaces Diagram of the beam type 3D printer with counter balancing and showing joints and their movements\relax }}{28}{figure.caption.23}%
+\contentsline {figure}{\numberline {10}{\ignorespaces Ball and stick visualtization of the 3D Printer designed\relax }}{30}{figure.caption.26}%
+\contentsline {figure}{\numberline {11}{\ignorespaces Trapezoidal profile of speed $ (v) $ against time $ (t) $\relax }}{33}{figure.caption.29}%
+\contentsline {figure}{\numberline {12}{\ignorespaces Via points represented in blue dots of a trajectory between which the red line is where a trajectory is generated \cite {corke_2017_robotics}\relax }}{35}{figure.caption.30}%
+\contentsline {figure}{\numberline {13}{\ignorespaces Notation for multi-segment trajectory showing four points and three motion segments. Blue indicates constant velocity motion, red indicates regions of acceleration \cite {corke_2017_robotics}\relax }}{36}{figure.caption.31}%
+\contentsline {figure}{\numberline {14}{\ignorespaces NMPC problem computation flow diagram\relax }}{44}{figure.caption.32}%
+\contentsline {figure}{\numberline {15}{\ignorespaces A common 3 axis cartesian FDM 3D printer commonly consisting of 3 actuators\relax }}{46}{figure.caption.33}%
+\contentsline {figure}{\numberline {16}{\ignorespaces University of Newcastle logo\relax }}{50}{figure.caption.38}%
+\contentsline {figure}{\numberline {17}{\ignorespaces Waypoints extracted from The University of Newcastle's logo\relax }}{50}{figure.caption.39}%
+\contentsline {figure}{\numberline {18}{\ignorespaces Desired trajectory points extracted from waypoints of the logo\relax }}{51}{figure.caption.40}%
+\contentsline {figure}{\numberline {19}{\ignorespaces The simulated tower crane model tracking the trajectory\relax }}{51}{figure.caption.41}%
+\contentsline {figure}{\numberline {20}{\ignorespaces The desired trajectory in task space coordinates\relax }}{52}{figure.caption.42}%
+\contentsline {figure}{\numberline {21}{\ignorespaces The desired trajectory in joint space coordinates\relax }}{52}{figure.caption.43}%
+\contentsline {figure}{\numberline {22}{\ignorespaces Simulated results of the LQR controller tracking a desired position trajectory\relax }}{53}{figure.caption.44}%
+\contentsline {figure}{\numberline {23}{\ignorespaces Simulated results of the LQR controller tracking a desired velocity trajectory\relax }}{54}{figure.caption.45}%
+\contentsline {figure}{\numberline {24}{\ignorespaces Simulated results of the LQR controller tracking a desired acceleration trajectory\relax }}{54}{figure.caption.46}%
+\contentsline {figure}{\numberline {25}{\ignorespaces Control forces applied by actuators\relax }}{55}{figure.caption.47}%
+\contentsline {figure}{\numberline {26}{\ignorespaces Moments acting about joint 2\relax }}{55}{figure.caption.48}%
+\contentsline {figure}{\numberline {27}{\ignorespaces LQR Controller vs trajectory tracking of the end effector in task space. (Top View)\relax }}{56}{figure.caption.49}%
+\contentsline {figure}{\numberline {28}{\ignorespaces LQR Controller vs trajectory tracking of the end effector in task space. (Side View)\relax }}{56}{figure.caption.50}%
+\contentsline {figure}{\numberline {29}{\ignorespaces LQR Controller vs trajectory tracking of the end effector in task space. (Isometric View)\relax }}{57}{figure.caption.51}%
+\contentsline {figure}{\numberline {30}{\ignorespaces Simulated results of the NMPC controller tracking a desired position trajectory\relax }}{58}{figure.caption.52}%
+\contentsline {figure}{\numberline {31}{\ignorespaces Simulated results of the NMPC controller tracking a desired velocity trajectory\relax }}{58}{figure.caption.53}%
+\contentsline {figure}{\numberline {32}{\ignorespaces Simulated results of the NMPC controller tracking a desired acceleration trajectory\relax }}{59}{figure.caption.54}%
+\contentsline {figure}{\numberline {33}{\ignorespaces A common 3 axis cartesian FDM 3D printer commonly consisting of 3 actuators\relax }}{59}{figure.caption.55}%
+\contentsline {figure}{\numberline {34}{\ignorespaces NMPC Controller vs trajectory tracking of the end effector in task space. (Top View)\relax }}{60}{figure.caption.56}%
+\contentsline {figure}{\numberline {35}{\ignorespaces NMPC Controller vs trajectory tracking of the end effector in task space. (Side View)\relax }}{60}{figure.caption.57}%
+\contentsline {figure}{\numberline {36}{\ignorespaces NMPC Controller vs trajectory tracking of the end effector in task space. (Isometric View)\relax }}{61}{figure.caption.58}%
+\providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 
